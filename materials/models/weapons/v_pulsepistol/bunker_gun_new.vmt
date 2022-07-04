@@ -1,0 +1,19 @@
+VertexLitGeneric
+{
+	"$basetexture" "Models/weapons/V_pulsepistol/bunker_gun_new"
+	"$bumpmap" "Models/weapons/V_pulsepistol/bunker_gun_new_n"
+	"$surfaceprop" "metal"
+	"$envmap" "env_cubemap"
+	"$envmapmask" "Models/props_combine/bunker_gun01_mask"
+                "$normalmapalphaenvmapmask" 1
+	"$selfillum" "1"
+	"$phong" "1"
+	"$phongboost" "1"
+	"$phongexponent" "15"
+	"$phongalbedotint" "1"								
+	"$phongfresnelranges"	"[.1 5 1]"
+}
+
+
+
+
