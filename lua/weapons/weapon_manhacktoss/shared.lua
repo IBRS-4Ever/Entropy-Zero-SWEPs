@@ -10,6 +10,7 @@ SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie int
 SWEP.AdminOnly = false
 SWEP.DrawCrosshair			= true		-- Draw the crosshair?
 SWEP.DrawCrosshairIS = false --Draw the crosshair in ironsights?
+--SWEP.PrintName				= "Manhack Toss"		-- Weapon name (Shown on HUD)
 SWEP.PrintName				= "Manhack Toss"		-- Weapon name (Shown on HUD)
 SWEP.Slot				= 5			-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
 SWEP.SlotPos				= 20			-- Position in the slot
@@ -41,8 +42,6 @@ SWEP.Secondary.Damage = 125
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "none"
-
-if ( CLIENT ) then language.Add( "manhack_ammo", "Manhack" ) end
 
 function SWEP:Reload()
 self.Weapon:DefaultReload(ACT_VM_RELOAD) 
