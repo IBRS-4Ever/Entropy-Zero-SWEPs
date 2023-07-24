@@ -1,0 +1,9 @@
+SDK_VertexLitGeneric
+{
+	$basetexture "models/weapons/ezu/v_mp5k/mp5k"
+	$bumpmap "models/weapons/ezu/v_mp5k/mp5k_n"
+
+	$phong 1
+	$phongfresnelranges "[0.2 4 1]"
+	$phongexponent 45
+}

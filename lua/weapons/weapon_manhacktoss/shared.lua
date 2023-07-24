@@ -10,7 +10,6 @@ SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie int
 SWEP.AdminOnly = false
 SWEP.DrawCrosshair			= true		-- Draw the crosshair?
 SWEP.DrawCrosshairIS = false --Draw the crosshair in ironsights?
---SWEP.PrintName				= "Manhack Toss"		-- Weapon name (Shown on HUD)
 SWEP.PrintName				= "Manhack Toss"		-- Weapon name (Shown on HUD)
 SWEP.Slot				= 5			-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
 SWEP.SlotPos				= 20			-- Position in the slot
@@ -65,41 +64,41 @@ end
 
 function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
-
 	if ( IsFirstTimePredicted() ) then
-	if SERVER then
-		local Manhack = ents.Create("npc_manhack")
-	Manhack:SetOwner(self.Owner)
-	Manhack:SetPos(self.Owner:GetShootPos() + self.Owner:GetAimVector()*50 )
-	Manhack:SetAngles(self.Owner:EyeAngles())
-	Manhack:Spawn()
-	Manhack:Activate()
-	Manhack:SetVelocity(self.Owner:GetAimVector()*1000 + Vector(0,0,80))
-	Manhack:SetHealth(200)
-	Manhack:AddRelationship( "player D_LI 99" )
-	Manhack:SetSequence( "deploy" )
-	Manhack.IsScripted = true
+		if SERVER then
+			local Manhack = ents.Create("npc_manhack")
+			Manhack:SetOwner(self.Owner)
+			Manhack:SetPos(self.Owner:GetShootPos() + self.Owner:GetAimVector()*50 )
+			Manhack:SetAngles(self.Owner:EyeAngles())
+			Manhack:Spawn()
+			Manhack:Activate()
+			Manhack:SetVelocity(self.Owner:GetAimVector()*1000 + Vector(0,0,80))
+			Manhack:SetHealth(200)
+			Manhack:AddRelationship( "player D_LI 99" )
+			Manhack:SetSequence( "deploy" )
+			Manhack.IsScripted = true
 		
-		self:SetNextPrimaryFire( CurTime() + 1 )
-	    self:SetNextSecondaryFire( CurTime() + 1 )
-		self:SendWeaponAnim( ACT_VM_THROW )
-		self.Owner:SetAnimation( PLAYER_ATTACK1 )
-			if GetConVar( "sk_ez_infinite_ammo" ):GetInt() == 0 then
+			self:SetNextPrimaryFire( CurTime() + 1 )
+			self:SetNextSecondaryFire( CurTime() + 1 )
+			self:SendWeaponAnim( ACT_VM_THROW )
+			self.Owner:SetAnimation( PLAYER_ATTACK1 )
+			if GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 0 then
 				self:TakePrimaryAmmo( 1 )
 			else
 				self:TakePrimaryAmmo( 0 )
 			end
-	end
+		end
 
-	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-	self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
-    self:Reload()
-	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-end
+		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
+		self:Reload()
+		self.Idle = 0
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	end
 end
 
 function SWEP:Think()
+	self.ViewModelFOV = 54
 	if self.Idle == 0 and self.IdleTimer < CurTime() then
 		if SERVER then
 			self.Weapon:SendWeaponAnim( ACT_VM_IDLE )

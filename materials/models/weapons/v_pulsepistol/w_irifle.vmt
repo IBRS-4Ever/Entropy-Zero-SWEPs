@@ -1,4 +1,4 @@
-VertexLitGeneric
+SDK_VertexLitGeneric
 {
 	"$basetexture" "models/weapons/v_pulsepistol/w_irifle"
 	"$basetexture" "models/weapons/v_pulsepistol/w_irifle_n"

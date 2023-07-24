@@ -1,4 +1,4 @@
-VertexLitGeneric
+SDK_VertexLitGeneric
 {
 	"$baseTexture" "Models/Weapons/V_pulsepistol/v_pistol_sheet"
 	"$bumpmap" "Models/Weapons/V_pulsepistol/v_pistol_sheet_normal"

@@ -1,0 +1,5 @@
+SDK_VertexLitGeneric
+{
+	$basetexture "models/ez2/police/v_hand_sheet"
+	$bumpmap "models/weapons/v_hand/v_hand_sheet_normal"
+}

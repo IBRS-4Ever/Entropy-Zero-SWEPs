@@ -1,0 +1,13 @@
+SDK_VertexLitGeneric
+{
+	$basetexture "models/weapons/ez2/v_357/357_sheet"
+	$bumpmap "models/weapons/ez2/v_357/357_sheet_n"
+
+	$phong 1
+	$phongfresnelranges "[0.91 99.99 3]"
+	$phongtint "[0.60 0.81 1]"
+	$phongalbedotint 1
+	$phongexponent 48
+
+	$selfillum 1
+}

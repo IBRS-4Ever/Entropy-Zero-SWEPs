@@ -1,0 +1,15 @@
+SDK_VertexLitGeneric
+{
+	$basetexture "models/weapons/ez2/v_irifle_proto/v_irifle"
+	$bumpmap "models/weapons/ez2/v_irifle/v_irifle_normal"
+	$surfaceprop Metal
+
+	$phong 1
+	$phongfresnelranges "[0.1 0.4 3]"
+	$phongexponent 31
+	$phongboost 2
+
+	$selfillum 1
+
+	360?$color2 "[ 0.8 0.8 0.8 ]"
+}

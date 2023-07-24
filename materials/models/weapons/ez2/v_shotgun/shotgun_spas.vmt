@@ -1,0 +1,15 @@
+VertexLitGeneric
+{
+	$basetexture "models/weapons/ez2/v_shotgun/shotgun_spas"
+
+	$envmapfresnelminmaxexp "[0 5 .4]"
+
+	$phong 1
+	$phongexponenttexture "models/weapons/ez2/v_shotgun/shotgun_spas_exp"
+	$phongfresnelranges "[0.1 5 1]"
+	$phongalbedotint 1
+	$phongboost 0.25
+	$basemapalphaphongmask 1
+
+	$basemapalphaenvmapmask 1
+}

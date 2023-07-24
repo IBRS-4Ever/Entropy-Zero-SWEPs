@@ -1,0 +1,7 @@
+SDK_VertexLitGeneric
+{
+	$basetexture "models/weapons/ez2/v_irifle_proto/v_irifle_core"
+	$surfaceprop Metal
+
+	$selfillum 1
+}
