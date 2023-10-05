@@ -1,5 +1,5 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
+SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Manufacturer = "Combine" --Gun Manufactrer (e.g. Hoeckler and Koch )
 SWEP.Author				= "Insane Black Rock Shooter" --Author Tooltip
 SWEP.Contact				= "" --Contact Info Tooltip
@@ -10,7 +10,9 @@ SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie int
 SWEP.AdminOnly = false
 SWEP.DrawCrosshair			= true		-- Draw the crosshair?
 SWEP.DrawCrosshairIS = false --Draw the crosshair in ironsights?
-SWEP.PrintName				= "Pulse Pistol"		-- Weapon name (Shown on HUD)
+if language then
+	SWEP.PrintName				= language.GetPhrase( "ez_swep.pulse.pistol" ) -- "Prototype AR2 (EZ2)"		-- Weapon name (Shown on HUD)
+end
 SWEP.Slot				= 1			-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
 SWEP.SlotPos				= 20			-- Position in the slot
 SWEP.DrawAmmo				= true		-- Should draw the default HL2 ammo counter if enabled in the GUI.
@@ -43,7 +45,6 @@ SWEP.Secondary.Ammo = "none"
 SWEP.HoldType = "revolver"
 SWEP.ReloadSound = ""
 
-SWEP.PrimaryDamage = "sk_ez2_pulse_pistol_dmg"
 SWEP.SelectIcon = "d"
 
 function SWEP:Initialize()
@@ -72,7 +73,7 @@ function SWEP:PrimaryAttack()
 						bullet.Spread = Vector( 0, 0, 0 )
 					end
 				bullet.Force = 5
-				bullet.Damage = self.Primary.Damage
+				bullet.Damage = GetConVar( "ez2_swep_pulse_pistol_dmg" ):GetInt()
 				bullet.TracerName = "AR2Tracer"
 				self.Owner:FireBullets( bullet )
 					if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
@@ -109,7 +110,7 @@ function SWEP:SecondaryAttack()
 		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
 		bullet.Spread = Vector( 0.01, 0.01, 0 )
 		bullet.Force = 5
-		bullet.Damage = (self.Primary.Damage + 1*(self:Clip1() - 10))
+		bullet.Damage = (GetConVar( "ez2_swep_pulse_pistol_dmg" ):GetInt() + 1*(self:Clip1() - 10))
 		bullet.TracerName = "AR2Tracer"
 		self.Owner:FireBullets( bullet )
 		self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))
@@ -143,6 +144,17 @@ function SWEP:CustomAmmoDisplay()
 	self.AmmoDisplay.PrimaryClip = self:Clip1()
 
 	return self.AmmoDisplay
+
+end
+
+function SWEP:DoImpactEffect( tr, nDamageType )
+
+	if ( tr.HitSky ) then return end
+	
+	local effectdata = EffectData()
+	effectdata:SetOrigin( tr.HitPos + tr.HitNormal )
+	effectdata:SetNormal( tr.HitNormal )
+	util.Effect( "AR2Impact", effectdata )
 
 end
 

@@ -21,34 +21,49 @@ SWEP.IdleLowerTimer = CurTime()
 SWEP.LowerToIdle = 0
 SWEP.LowerToIdleTimer = CurTime()
 
+function SWEP:Equip()
+	if self.Owner:GetClass() == "npc_citizen" then
+		self.Weapon.Owner:Fire( "DisableWeaponPickup" )
+	end
+end
+
 function SWEP:Reload()
-	if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetInt() == 1 then
-		self:PlayAnim( self.FirstDrawAnimation )
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	if !self.Owner:IsNPC() then
+		if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetInt() == 1 then
+			self:PlayAnim( self.FirstDrawAnimation )
+			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		end
+		if self.Weapon:DefaultReload(ACT_VM_RELOAD) then
+			self:EmitSound( self.ReloadSound )
+		end
+		self.Idle = 0
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	
+	else
+		self.Owner:SetSchedule(SCHED_RELOAD)
+		self:EmitSound( self.NPCReloadSound ) 
 	end
-	if self.Weapon:DefaultReload(ACT_VM_RELOAD) then
-		self:EmitSound( self.ReloadSound )
-	end
-	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:PlayAnim(a,c,t)
-local vm=self.Owner:GetViewModel()
-if a then
-local n=vm:LookupSequence(a)
-vm:ResetSequence(n)
-vm:ResetSequenceInfo()
-vm:SendViewModelMatchingSequence(n)
-end
-if !c then c=1 end
-vm:SetPlaybackRate(c)
+	local vm=self.Owner:GetViewModel()
+	if a then
+		local n=vm:LookupSequence(a)
+		vm:ResetSequence(n)
+		vm:ResetSequenceInfo()
+		vm:SendViewModelMatchingSequence(n)
+	end
+	if !c then c=1 end
+		vm:SetPlaybackRate(c)
 end
 
 function SWEP:Initialize()
 	self:SetWeaponHoldType( self.HoldType )
-	self.Idle = 0
-	self.IdleTimer = CurTime() + 4
+	
+	if !self.Owner:IsNPC() then
+		self.Idle = 0
+		self.IdleTimer = CurTime() + 4
+	end
 	-- self.Dot = Material("materials/ez2crosshair/crosshairs.vtf")
 end
 
@@ -65,94 +80,114 @@ end
 -- end
 
 function SWEP:Deploy()
-	if self.FirstDraw != 1 and GetConVar( "ez_swep_firstdraw_animation" ):GetInt() == 1 then
-		self:PlayAnim( self.FirstDrawAnimation )
-		self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
-		self:SetNextSecondaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
-		self.FirstDraw = 1
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration() + 3
-	else
-		self:SendWeaponAnim( ACT_VM_DRAW )
-		self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-	end
-end
-
-function SWEP:CanPrimaryAttack()
-    if self:Clip1() < 1 then
-        self:EmitSound("Weapon_Pistol.Empty")
-		self:SendWeaponAnim( ACT_VM_DRYFIRE )
-		self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-        self:SetNextPrimaryFire( CurTime() + self.Primary.Delay ) -- 等待动画播放完毕
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-		self:Reload()
-        return false
-    end
-    return true
-end
-
-function SWEP:Think()
-	self.Primary.Damage = GetConVar( self.PrimaryDamage ):GetInt()
-	self.ViewModelFOV = GetConVar( "ez_swep_fov" ):GetInt()
-	if self.Idle == 0 and self.IdleTimer < CurTime() then
-		if SERVER then
-			self.Weapon:SendWeaponAnim( ACT_VM_IDLE )
-		end
-		self.Idle = 1
-	end
-	
-	if GetConVar( "ez_swep_lower_on_ally" ):GetInt() == 1 then
-	function IdleToLowerAnimation()
-		if self.IdleToLower == 0 and self.IdleLower == 0 and self.IdleToLowerTimer < CurTime() then
-			self:SendWeaponAnim(ACT_VM_IDLE_TO_LOWERED)
-			self.IdleToLower = 1
-			self.IdleToLowerTimer = CurTime() + 0.5
-			self.IdleLower = 1
-			self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			print("IdleToLower")
-		end
-		
-		if self.IdleLower == 1 and self.IdleToLower == 1 and self.IdleLowerTimer < CurTime() then
-			self:SendWeaponAnim(ACT_VM_IDLE_LOWERED)
-			--self.IdleLower = 0
-			self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			self.LowerToIdle = 0
-			self.LowerToIdleTimer = CurTime() + 1
-			print("IdleLower")
-		end
-	end
-	
-	function LowerToIdleAnimation()
-		if self.LowerToIdle == 0 and self.IdleLower == 1 and self.LowerToIdleTimer < CurTime() then
-			self:SendWeaponAnim(ACT_VM_LOWERED_TO_IDLE)
-			self.IdleLower = 0
-			self.IdleToLower = 0
-			self.LowerToIdle = 1
-			self.IdleToLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			print("LowerToIdle")
+	if !self.Owner:IsNPC() then
+		if self.FirstDraw != 1 and GetConVar( "ez_swep_firstdraw_animation" ):GetInt() == 1 then
+			self:PlayAnim( self.FirstDrawAnimation )
+			self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
+			self:SetNextSecondaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
+			self.FirstDraw = 1
+			self.Idle = 0
+			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration() + 3
+		else
+			self:SendWeaponAnim( ACT_VM_DRAW )
+			self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
 			self.Idle = 0
 			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		end
 	end
-		
-	-- timer.Create( "CheckFriendly", 0.5, 0, function()
-	if CLIENT then return end -- 只在服务端运行此代码
-    if not IsValid(self.Owner) or not self.Owner:IsPlayer() then return end  -- 确保武器的拥有者是玩家
+end
 
-    --if self.Owner:ShouldDrawLocalPlayer() then return end -- 确保玩家不是第三人称视角，只有第一人称视角时才可触发
-
-    -- 获取玩家凝视的实体
-	local trace = self.Owner:GetEyeTrace()
-    if not IsValid(trace.Entity) or not trace.Entity:IsNPC()then return LowerToIdleAnimation() end
-    
-	local Friendly = IsFriendEntityName(trace.Entity:GetClass())
-    if Friendly then
-			IdleToLowerAnimation() -- 调用函数
-    end
-	-- end )
+function SWEP:NPCCanPrimaryAttack()
+	if self.Owner:IsNPC() then
+		if ( self.Weapon:Clip1() <= 0 ) then
+			self:SetNextPrimaryFire( CurTime() + 0.2 )
+			self:Reload()
+			return false
+		end
+		return true
 	end
 end
+
+function SWEP:CanPrimaryAttack()
+	if !self.Owner:IsNPC() then
+		if self:Clip1() < 1 then
+			self:EmitSound("Weapon_Pistol.Empty")
+			self:SendWeaponAnim( ACT_VM_DRYFIRE )
+			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
+			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay ) -- 等待动画播放完毕
+			self.Idle = 0
+			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self:Reload()
+			return false
+		end
+		return true
+	end
+end
+
+function SWEP:Think()
+	if !self.Owner:IsNPC() then
+		self.ViewModelFOV = GetConVar( "ez_swep_fov" ):GetInt()
+		if self.Idle == 0 and self.IdleTimer < CurTime() then
+			if SERVER then
+				self.Weapon:SendWeaponAnim( ACT_VM_IDLE )
+			end
+			self.Idle = 1
+		end
+		
+		if GetConVar( "ez_swep_lower_on_ally" ):GetInt() == 1 then
+		function IdleToLowerAnimation()
+			if self.IdleToLower == 0 and self.IdleLower == 0 and self.IdleToLowerTimer < CurTime() then
+				self:SendWeaponAnim(ACT_VM_IDLE_TO_LOWERED)
+				self.IdleToLower = 1
+				self.IdleToLowerTimer = CurTime() + 0.5
+				self.IdleLower = 1
+				self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+				print("IdleToLower")
+			end
+			
+			if self.IdleLower == 1 and self.IdleToLower == 1 and self.IdleLowerTimer < CurTime() then
+				self:SendWeaponAnim(ACT_VM_IDLE_LOWERED)
+				--self.IdleLower = 0
+				self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+				self.LowerToIdle = 0
+				self.LowerToIdleTimer = CurTime() + 1
+				print("IdleLower")
+			end
+		end
+		
+		function LowerToIdleAnimation()
+			if self.LowerToIdle == 0 and self.IdleLower == 1 and self.LowerToIdleTimer < CurTime() then
+				self:SendWeaponAnim(ACT_VM_LOWERED_TO_IDLE)
+				self.IdleLower = 0
+				self.IdleToLower = 0
+				self.LowerToIdle = 1
+				self.IdleToLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+				print("LowerToIdle")
+				self.Idle = 0
+				self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			end
+		end
+			
+		-- timer.Create( "CheckFriendly", 0.5, 0, function()
+		if CLIENT then return end -- 只在服务端运行此代码
+		if not IsValid(self.Owner) or not self.Owner:IsPlayer() then return end  -- 确保武器的拥有者是玩家
+
+		--if self.Owner:ShouldDrawLocalPlayer() then return end -- 确保玩家不是第三人称视角，只有第一人称视角时才可触发
+
+		-- 获取玩家凝视的实体
+		local trace = self.Owner:GetEyeTrace()
+		if not IsValid(trace.Entity) or not trace.Entity:IsNPC()then return LowerToIdleAnimation() end
+		
+		local Friendly = IsFriendEntityName(trace.Entity:GetClass())
+		if Friendly then
+				IdleToLowerAnimation() -- 调用函数
+		end
+		-- end )
+		end
+	end
+end
+
+-- function SWEP:Holster( wep )
+	-- return true
+-- end

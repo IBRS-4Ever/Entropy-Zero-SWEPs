@@ -1,0 +1,9 @@
+SDK_VertexLitGeneric
+{
+	$basetexture "models/ez2/elite_hands/v_hand_sheet"
+	$bumpmap "models/weapons/v_hand/v_hand_sheet_normal"
+
+	$phong 1
+	$phongfresnelranges "[0.2 0.4 1]"
+	$phongexponent 25
+}

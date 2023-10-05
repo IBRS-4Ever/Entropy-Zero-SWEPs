@@ -1,5 +1,5 @@
 SWEP.Base           = "weapon_base"
-SWEP.Category				= "Entropy : Zero" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
+SWEP.Category				= "Entropy : Zero - Uprising" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Manufacturer = "Combine" --Gun Manufactrer (e.g. Hoeckler and Koch )
 SWEP.Author				= "Insane Black Rock Shooter" --Author Tooltip
 SWEP.Contact				= "" --Contact Info Tooltip

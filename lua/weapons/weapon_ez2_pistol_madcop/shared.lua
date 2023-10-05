@@ -1,5 +1,5 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
+SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
 SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
 SWEP.AdminOnly = false
@@ -27,7 +27,6 @@ SWEP.HoldType = "pistol"
 SWEP.ReloadSound = "Weapon_EZ2_Pistol_Madcop.Reload"
 SWEP.FirstDrawAnimation = "drawfirst"
 
-SWEP.PrimaryDamage = "ez_swep_pistol_madcop_dmg"
 SWEP.SelectIcon = "d"
 
 function SWEP:PrimaryAttack()
@@ -44,7 +43,7 @@ function SWEP:PrimaryAttack()
 					bullet.Spread = Vector( 0, 0, 0 )
 				end
 				bullet.Force = 5
-				bullet.Damage = self.Primary.Damage
+				bullet.Damage = GetConVar( "ez2_swep_pistol_madcop_dmg" ):GetInt()
 				bullet.TracerName = "Tracer"
 				self.Owner:FireBullets( bullet )
 			
