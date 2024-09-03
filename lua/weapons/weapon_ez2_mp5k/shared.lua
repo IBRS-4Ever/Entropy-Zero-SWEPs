@@ -92,7 +92,7 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:GetNPCRestTimes()
-    return 0.4, 0.6
+    return 0.1, 0.1
 end
 
 function SWEP:GetNPCBurstSettings()
@@ -100,7 +100,7 @@ function SWEP:GetNPCBurstSettings()
 end
 
 function SWEP:GetNPCBulletSpread( proficiency )
-    return 1
+    return 4
 end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_mp5k", title = "MP5K (EZ2)" } )

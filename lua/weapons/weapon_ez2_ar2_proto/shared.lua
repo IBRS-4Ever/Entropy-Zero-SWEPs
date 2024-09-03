@@ -166,15 +166,15 @@ function SWEP:DoImpactEffect( tr, nDamageType )
 end
 
 function SWEP:GetNPCRestTimes()
-    return 0.4, 0.6
+    return 0.1, 0.1
 end
 
 function SWEP:GetNPCBurstSettings()
-    return 6, 12, 0.1
+    return 12, 24, 0.1
 end
 
 function SWEP:GetNPCBulletSpread( proficiency )
-    return 1
+    return 4
 end
 
 -- function SWEP:GetCapabilities()

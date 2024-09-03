@@ -68,6 +68,15 @@ sound = { "weapons/ez2/357/357_fire2.wav", "weapons/ez2/357/357_fire3.wav" }
 
 sound.Add(
 {
+name = "Weapon_ez2_357.Reload",
+channel = CHAN_ITEM,
+volume = 0.7,
+soundlevel = SNDLVL_NORM,
+sound = { "weapons/ez2/357/reload1.wav", "weapons/ez2/357/357_fire3.wav" }
+} )
+
+sound.Add(
+{
 name = "Weapon_ez2_357.OpenLoader",
 channel = CHAN_AUTO,
 volume = 0.7,
@@ -558,4 +567,13 @@ channel = CHAN_AUTO,
 volume = 0.9,
 soundlevel = SNDLVL_NORM,
 sound = "weapons/ez2/mp5k/mp5k_Slideforward2.wav"
+} )
+
+sound.Add(
+{
+name = "Weapon_ez2_MP5K.Reload",
+channel = CHAN_AUTO,
+volume = 0.9,
+soundlevel = SNDLVL_NORM,
+sound = "weapons/ez2/mp5k/mp5k_reload1.wav"
 } )

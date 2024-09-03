@@ -74,6 +74,7 @@ function SWEP:PrimaryAttack()
 			Manhack:Activate()
 			Manhack:SetVelocity(self.Owner:GetAimVector()*1000 + Vector(0,0,80))
 			Manhack:SetHealth(200)
+			-- Manhack:SetDamage(75)
 			Manhack:AddRelationship( "player D_LI 99" )
 			Manhack:SetSequence( "deploy" )
 			Manhack.IsScripted = true

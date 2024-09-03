@@ -86,8 +86,8 @@ function SWEP:PrimaryAttack()
 			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		end
-	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.Idle = 0
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	else
 		if ( !self:NPCCanPrimaryAttack() ) then return end
 		local bullet = {}
@@ -102,7 +102,7 @@ function SWEP:PrimaryAttack()
 		
 		self:EmitSound("Weapon_shotgun.Single")
 		self:TakePrimaryAmmo( 1 )
-		self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
+		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 	end
 end
@@ -167,14 +167,14 @@ function SWEP:GetNPCRestTimes()
 end
 
 function SWEP:GetNPCBurstSettings()
-    -- return 6, 12, 0.1
+    return 6, 12, 1.4
 end
 
 function SWEP:GetNPCBulletSpread( proficiency )
-    return 1
+    return 4
 end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_shotgun", title = "Shotgun (EZ2)" } )
 
 if ( SERVER ) then return end
-killicon.AddAlias( "weapon_ez2_shotgun_madcop", "weapon_shotgun" )
+killicon.AddAlias( "weapon_ez2_shotgun", "weapon_shotgun" )

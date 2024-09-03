@@ -98,7 +98,7 @@ function SWEP:GetNPCBurstSettings()
 end
 
 function SWEP:GetNPCBulletSpread( proficiency )
-    return 1
+    return 4
 end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_pistol", title = "Pistol (EZ2)" } )

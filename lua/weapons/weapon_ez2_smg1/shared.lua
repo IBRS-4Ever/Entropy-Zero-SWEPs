@@ -123,7 +123,7 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:GetNPCRestTimes()
-    return 0.4, 0.6
+    return 0.1, 0.2
 end
 
 function SWEP:GetNPCBurstSettings()
@@ -131,10 +131,10 @@ function SWEP:GetNPCBurstSettings()
 end
 
 function SWEP:GetNPCBulletSpread( proficiency )
-    return 1
+    return 4
 end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_smg1", title = "SMG (EZ2)" } )
 
 if ( SERVER ) then return end
-killicon.AddFont( "weapon_ez2_mp5k", "WeaponIcons", "f", Color( 255, 80, 0, 255 ) )
+killicon.AddAlias( "weapon_ez2_smg1", "weapon_smg1" )
