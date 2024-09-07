@@ -2,9 +2,9 @@ SWEP.Base           = "weapon_base"
 SWEP.Category				= "Entropy : Zero" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Author				= "Insane Black Rock Shooter" --Author Tooltip
 SWEP.DrawAmmo				= true		-- Should draw the default HL2 ammo counter if enabled in the GUI.
-SWEP.AutoSwitchTo			= true		-- Auto switch to if we pick it up
-SWEP.AutoSwitchFrom			= true		-- Auto switch from if you pick up a better weapon
-SWEP.Weight				= 30			-- This controls how "good" the weapon is for autopickup.
+-- SWEP.AutoSwitchTo			= true		-- Auto switch to if we pick it up
+-- SWEP.AutoSwitchFrom			= true		-- Auto switch from if you pick up a better weapon
+-- SWEP.Weight				= 30			-- This controls how "good" the weapon is for autopickup.
 SWEP.UseHands = true
 
 SWEP.Idle = 0
@@ -46,12 +46,7 @@ function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
 			fDamageMulti = 0.8
 		end
 		local bullet = {Num=1,Src=trace.HitPos,Dir=tr.Normal,Spread=vector_origin,Tracer=1,TracerName="effect_penetration_trace",Force=5,Damage=(dmginfo:GetDamage()*fDamageMulti),HullSize=2}
-		if bullet.Damage > 1 then
-			bullet.Callback	= function(a,b,c)
-				c:SetDamageType(DMG_THROUGHTWALL)
-				self:BulletPenetrate(a,b,c)
-			end
-		end
+		
 		timer.Simple(0, function()
 		if not IsFirstTimePredicted() then return end
 			attacker.FireBullets(attacker, bullet, true)
@@ -129,6 +124,7 @@ function SWEP:Deploy()
 			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		end
 	end
+	return true
 end
 
 function SWEP:NPCCanPrimaryAttack()
@@ -156,6 +152,10 @@ function SWEP:CanPrimaryAttack()
 		end
 		return true
 	end
+end
+
+function SWEP:Holster( wep )
+	return true
 end
 
 function SWEP:Think()
@@ -220,7 +220,3 @@ function SWEP:Think()
 		end
 	end
 end
-
--- function SWEP:Holster( wep )
-	-- return true
--- end
