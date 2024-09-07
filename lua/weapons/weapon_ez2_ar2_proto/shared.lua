@@ -27,6 +27,8 @@ SWEP.HoldType = "ar2"
 SWEP.ReloadSound = ""
 SWEP.NPCReloadSound = "Weapon_AR2.Reload"
 
+SWEP.TracerName = "AR2Tracer"
+
 SWEP.SelectIcon = "l"
 
 function SWEP:PrimaryAttack()
@@ -48,7 +50,7 @@ function SWEP:PrimaryAttack()
 					
 			bullet.Force = 5
 			bullet.Damage = GetConVar("ez2_swep_proto_ar2_plr_dmg"):GetInt()
-			bullet.TracerName = "AR2Tracer"
+			bullet.TracerName = self.TracerName
 			bullet.Callback	= function(a,b,c)
 				self:BulletPenetrate(a,b,c)
 			end
@@ -84,7 +86,7 @@ function SWEP:PrimaryAttack()
 		bullet.Spread = Vector( 0.05, 0.05, 0 )
 		bullet.Force = 5
 		bullet.Damage = GetConVar("ez2_swep_proto_ar2_npc_dmg"):GetInt()
-		bullet.TracerName = "AR2Tracer"
+		bullet.TracerName = self.TracerName
 		bullet.Callback	= function(a,b,c)
 			self:BulletPenetrate(a,b,c)
 		end

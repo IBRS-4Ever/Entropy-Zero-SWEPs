@@ -45,6 +45,8 @@ SWEP.Secondary.Ammo = "none"
 SWEP.HoldType = "revolver"
 SWEP.ReloadSound = ""
 
+SWEP.TracerName = "AR2Tracer"
+
 SWEP.SelectIcon = "d"
 
 function SWEP:Initialize()
@@ -74,7 +76,7 @@ function SWEP:PrimaryAttack()
 					end
 				bullet.Force = 5
 				bullet.Damage = GetConVar( "ez2_swep_pulse_pistol_dmg" ):GetInt()
-				bullet.TracerName = "AR2Tracer"
+				bullet.TracerName = self.TracerName
 				self.Owner:FireBullets( bullet )
 					if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
 						self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))
@@ -111,7 +113,7 @@ function SWEP:SecondaryAttack()
 		bullet.Spread = Vector( 0.01, 0.01, 0 )
 		bullet.Force = 5
 		bullet.Damage = (GetConVar( "ez2_swep_pulse_pistol_dmg" ):GetInt() + 1*(self:Clip1() - 10))
-		bullet.TracerName = "AR2Tracer"
+		bullet.TracerName = self.TracerName
 		self.Owner:FireBullets( bullet )
 		self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))
 		

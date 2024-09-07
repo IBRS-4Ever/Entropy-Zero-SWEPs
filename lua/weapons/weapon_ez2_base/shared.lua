@@ -21,6 +21,8 @@ SWEP.IdleLowerTimer = CurTime()
 SWEP.LowerToIdle = 0
 SWEP.LowerToIdleTimer = CurTime()
 
+SWEP.TracerName = "Tracer"
+
 function SWEP:Equip()
 	if self.Owner:GetClass() == "npc_citizen" then
 		self.Weapon.Owner:Fire( "DisableWeaponPickup" )
@@ -45,7 +47,7 @@ function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
 		elseif (mat == MAT_WOOD or mat == MAT_PLASTIC or mat == MAT_GLASS) then
 			fDamageMulti = 0.8
 		end
-		local bullet = {Num=1,Src=trace.HitPos,Dir=tr.Normal,Spread=vector_origin,Tracer=1,TracerName="effect_penetration_trace",Force=5,Damage=(dmginfo:GetDamage()*fDamageMulti),HullSize=2}
+		local bullet = {Num=1,Src=trace.HitPos,Dir=tr.Normal,Spread=vector_origin,Tracer=1,TracerName=self.TracerName,Force=5,Damage=(dmginfo:GetDamage()*fDamageMulti),HullSize=2}
 		
 		timer.Simple(0, function()
 		if not IsFirstTimePredicted() then return end
