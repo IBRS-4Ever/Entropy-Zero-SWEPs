@@ -46,6 +46,9 @@ function SWEP:PrimaryAttack()
 			bullet.Force = 5
 			bullet.Damage = GetConVar( "ez2_swep_pistol_plr_dmg" ):GetInt()
 			bullet.TracerName = "Tracer"
+			bullet.Callback	= function(a,b,c)
+				self:BulletPenetrate(a,b,c)
+			end
 			self.Owner:FireBullets( bullet )
 				
 			if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
@@ -76,6 +79,9 @@ function SWEP:PrimaryAttack()
 		bullet.Force = 5
 		bullet.Damage = GetConVar( "ez2_swep_pistol_npc_dmg" ):GetInt()
 		bullet.TracerName = "Tracer"
+		bullet.Callback	= function(a,b,c)
+			self:BulletPenetrate(a,b,c)
+		end
 		self.Owner:FireBullets( bullet )
 		
 		self:EmitSound("Weapon_EZ2_Pistol_Madcop.Single")

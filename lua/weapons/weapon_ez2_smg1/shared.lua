@@ -51,6 +51,9 @@ function SWEP:PrimaryAttack()
 			end
 			bullet.Force = 5
 			bullet.Damage = GetConVar("ez2_swep_smg1_plr_dmg"):GetInt()
+			bullet.Callback	= function(a,b,c)
+				self:BulletPenetrate(a,b,c)
+			end
 			self.Owner:FireBullets( bullet )
 				
 			self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
@@ -77,6 +80,9 @@ function SWEP:PrimaryAttack()
 		bullet.Force = 5
 		bullet.Damage = GetConVar("ez2_swep_smg1_npc_dmg"):GetInt()
 		bullet.AmmoType = self.Primary.Ammo
+		bullet.Callback	= function(a,b,c)
+			self:BulletPenetrate(a,b,c)
+		end
 		self.Owner:FireBullets( bullet )
 		
 		self:EmitSound( "Weapon_smg1.Single" )

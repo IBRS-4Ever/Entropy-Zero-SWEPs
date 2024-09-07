@@ -27,6 +27,39 @@ function SWEP:Equip()
 	end
 end
 
+function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
+	if IsValid(attacker) then
+		if CLIENT then return end
+		local mat = tr.MatType
+		if mat == MAT_SAND then return false end
+		local dir = tr.Normal * 16
+		if mat == MAT_GLASS or mat == MAT_PLASTIC or mat == MAT_WOOD or mat == MAT_FLESH or mat == MAT_ALIENFLESH then
+			dir = tr.Normal * 32
+		end
+		local trace = {start=tr.HitPos + dir,endpos=tr.HitPos,mask=MASK_SHOT}
+		trace = util.TraceLine(trace) 
+		if trace.StartSolid or trace.Fraction >= 1 or tr.Fraction <= 0 then return false end
+		local fDamageMulti = 0.5
+		if (mat == MAT_CONCRETE) then
+			fDamageMulti = 0.3
+		elseif (mat == MAT_WOOD or mat == MAT_PLASTIC or mat == MAT_GLASS) then
+			fDamageMulti = 0.8
+		end
+		local bullet = {Num=1,Src=trace.HitPos,Dir=tr.Normal,Spread=vector_origin,Tracer=1,TracerName="effect_penetration_trace",Force=5,Damage=(dmginfo:GetDamage()*fDamageMulti),HullSize=2}
+		if bullet.Damage > 1 then
+			bullet.Callback	= function(a,b,c)
+				c:SetDamageType(DMG_THROUGHTWALL)
+				self:BulletPenetrate(a,b,c)
+			end
+		end
+		timer.Simple(0, function()
+		if not IsFirstTimePredicted() then return end
+			attacker.FireBullets(attacker, bullet, true)
+		end)
+		return true
+	end
+end
+
 function SWEP:Reload()
 	if !self.Owner:IsNPC() then
 		if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetInt() == 1 then

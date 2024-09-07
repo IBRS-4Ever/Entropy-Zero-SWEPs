@@ -49,6 +49,9 @@ function SWEP:PrimaryAttack()
 			bullet.Force = 5
 			bullet.Damage = GetConVar("ez2_swep_proto_ar2_plr_dmg"):GetInt()
 			bullet.TracerName = "AR2Tracer"
+			bullet.Callback	= function(a,b,c)
+				self:BulletPenetrate(a,b,c)
+			end
 			self.Owner:FireBullets( bullet )
 				
 			if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
@@ -82,6 +85,9 @@ function SWEP:PrimaryAttack()
 		bullet.Force = 5
 		bullet.Damage = GetConVar("ez2_swep_proto_ar2_npc_dmg"):GetInt()
 		bullet.TracerName = "AR2Tracer"
+		bullet.Callback	= function(a,b,c)
+			self:BulletPenetrate(a,b,c)
+		end
 		self.Owner:FireBullets( bullet )
 		
 		self:EmitSound("Weapon_EZ2_AR2_Proto.Single")
