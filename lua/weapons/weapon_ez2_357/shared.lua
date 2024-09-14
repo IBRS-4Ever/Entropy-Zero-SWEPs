@@ -28,70 +28,70 @@ SWEP.NPCReloadSound = "Weapon_ez2_357.Reload"
 
 SWEP.SelectIcon = "e"
 
-function SWEP:PrimaryAttack()
-	if !self.Owner:IsNPC() then
-		if ( !self:CanPrimaryAttack() ) then return end
-		if ( IsFirstTimePredicted() ) then
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			local bullet = {}
-			bullet.Num = 1
-			bullet.Src = self.Owner:GetShootPos()
-			bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-			bullet.Spread = Vector( 0, 0, 0 )
-			bullet.Force = 15
-			bullet.Damage = GetConVar( "ez2_swep_357_plr_dmg" ):GetInt()
-			bullet.TracerName = "Tracer"
-			bullet.Callback	= function(a,b,c)
-				self:BulletPenetrate(a,b,c)
-			end
-			self.Owner:FireBullets( bullet )
-			
-			if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
-				self.Owner:ViewPunch(Angle( -8, math.Rand( -2, 2 ),0))
-					
-				-- 获取玩家准星的位置
-				local punch = Angle(math.Rand(-1,1), math.Rand(-1,1), 0)
-				local eyeang = self.Owner:EyeAngles() + punch
-
-				-- 应用准星移动和视角效果
-				self.Owner:SetEyeAngles(eyeang)
-			end
+function SWEP:NPCShoot_Primary( shootPos, shootDir )
+	if ( !self:NPCCanPrimaryAttack() ) then return end
+	local bullet = {}
+	bullet.Num = 1
+	bullet.Src = self.Owner:GetShootPos()
+	bullet.Dir = self.Owner:GetAimVector()
+	bullet.Spread = Vector( 0, 0, 0 )
+	bullet.Force = 15
+	bullet.Damage = GetConVar( "ez2_swep_357_npc_dmg" ):GetInt()
+	bullet.TracerName = "Tracer"
+	bullet.Callback	= function(a,b,c)
+		self:BulletPenetrate(a,b,c)
+	end
+	self.Owner:FireBullets( bullet )
 		
-			self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-			self.Owner:SetAnimation( PLAYER_ATTACK1 )
-			
-			if GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 0 then
-				self:TakePrimaryAmmo( 1 )
-			else
-				self:TakePrimaryAmmo( 0 )
-			end
-				
-			self:EmitSound("Weapon_ez2_357.Single")
-			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-			self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
-		end
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-	else
-		if ( !self:NPCCanPrimaryAttack() ) then return end
+	self:EmitSound("Weapon_ez2_357.Single")
+	self:TakePrimaryAmmo( 1 )
+	self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
+	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+end
+
+function SWEP:PrimaryAttack()
+	if ( !self:CanPrimaryAttack() ) then return end
+	if ( IsFirstTimePredicted() ) then
+		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		local bullet = {}
 		bullet.Num = 1
 		bullet.Src = self.Owner:GetShootPos()
-		bullet.Dir = self.Owner:GetAimVector()
+		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
 		bullet.Spread = Vector( 0, 0, 0 )
 		bullet.Force = 15
-		bullet.Damage = GetConVar( "ez2_swep_357_npc_dmg" ):GetInt()
+		bullet.Damage = GetConVar( "ez2_swep_357_plr_dmg" ):GetInt()
 		bullet.TracerName = "Tracer"
 		bullet.Callback	= function(a,b,c)
 			self:BulletPenetrate(a,b,c)
 		end
 		self.Owner:FireBullets( bullet )
+			
+		if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
+			self.Owner:ViewPunch(Angle( -8, math.Rand( -2, 2 ),0))
+					
+			-- 获取玩家准星的位置
+			local punch = Angle(math.Rand(-1,1), math.Rand(-1,1), 0)
+			local eyeang = self.Owner:EyeAngles() + punch
+
+			-- 应用准星移动和视角效果
+			self.Owner:SetEyeAngles(eyeang)
+		end
 		
+		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
+		self.Owner:SetAnimation( PLAYER_ATTACK1 )
+		
+		if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
+			self:TakePrimaryAmmo( 0 )
+		else
+			self:TakePrimaryAmmo( 1 )
+		end
+				
 		self:EmitSound("Weapon_ez2_357.Single")
-		self:TakePrimaryAmmo( 1 )
-		self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
-		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
+	self.Idle = 0
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()

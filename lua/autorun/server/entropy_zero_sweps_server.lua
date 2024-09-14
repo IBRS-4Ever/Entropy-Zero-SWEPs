@@ -16,13 +16,13 @@ hook.Add("OnEntityCreated", "ReplaceNPCWeapons", function(entity)
 			if !entity:GetActiveWeapon():IsValid() then return end
 			local NPCWeapon = entity:GetActiveWeapon():GetClass() or nil
 			if NPCWeapon == "weapon_smg1" then
-				weapons = { "weapon_ez2_mp5k", "weapon_ez2_mp5k", "weapon_ez2_mp5k", "weapon_ez2_smg1" }
+				weapons = { "weapon_ez2_mp5k", "weapon_ez2_mp5k", "weapon_ez2_smg1" }
 			elseif NPCWeapon == "weapon_ar2" then
-				weapons = { "weapon_ez2_ar2", "weapon_ez2_ar2", "weapon_ez2_ar2", "weapon_ez2_ar2_proto" }
+				weapons = { "weapon_ez2_ar2", "weapon_ez2_ar2", "weapon_ez2_ar2_proto" }
 			elseif NPCWeapon == "weapon_shotgun" then
 				weapons = { "weapon_ez2_shotgun" }
 			elseif NPCWeapon == "weapon_pistol" then
-				weapons = { "weapon_ez2_pistol", "weapon_ez2_pistol", "weapon_ez2_pistol", "weapon_ez2_357" }
+				weapons = { "weapon_ez2_pistol", "weapon_ez2_pistol", "weapon_ez2_357" }
 			end
 			
 			if next(weapons) ~= nil then

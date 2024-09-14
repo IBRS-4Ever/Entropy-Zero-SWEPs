@@ -31,71 +31,154 @@ SWEP.TracerName = "AR2Tracer"
 
 SWEP.SelectIcon = "l"
 
-function SWEP:PrimaryAttack()
-	
-	if !self.Owner:IsNPC() then
-		if ( !self:CanPrimaryAttack() ) then return end
-		if ( IsFirstTimePredicted() ) then
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			local bullet = {}
-			bullet.Num = GetConVar( "ez2_swep_proto_ar2_num" ):GetInt()
-			bullet.Src = self.Owner:GetShootPos()
-			bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-					
-			if GetConVar( "ez_swep_no_bullet_spread" ):GetInt() == 0 then
-				bullet.Spread = Vector( 0.05, 0.05, 0 )
-			else
-				bullet.Spread = Vector( 0, 0, 0 )
-			end
-					
-			bullet.Force = 5
-			bullet.Damage = GetConVar("ez2_swep_proto_ar2_plr_dmg"):GetInt()
-			bullet.TracerName = self.TracerName
-			bullet.Callback	= function(a,b,c)
-				self:BulletPenetrate(a,b,c)
-			end
-			self.Owner:FireBullets( bullet )
-				
-			if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
-				self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))
-			end
-			
-			self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-			self.Owner:SetAnimation( PLAYER_ATTACK1 )
-				
-			if GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 0 then
-				self:TakePrimaryAmmo( 1 )
-			else
-				self:TakePrimaryAmmo( 0 )
-			end
-					
-			self:EmitSound("Weapon_EZ2_AR2_Proto.Single")
-			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-			self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
-		end
-			
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+function SWEP:NPCShoot_Primary( shootPos, shootDir )
+	if ( !self:NPCCanPrimaryAttack() ) then return end
+	local bullet = {}
+	bullet.Num = GetConVar( "ez2_swep_proto_ar2_num" ):GetInt()
+	bullet.Src = self.Owner:GetShootPos()
+	bullet.Dir = self.Owner:GetAimVector()
+	bullet.Spread = Vector( 0.05, 0.05, 0 )
+	bullet.Force = 5
+	bullet.Damage = GetConVar("ez2_swep_proto_ar2_npc_dmg"):GetInt()
+	bullet.TracerName = self.TracerName
+	bullet.Callback	= function(a,b,c)
+		self:BulletPenetrate(a,b,c)
+	end
+	self.Owner:FireBullets( bullet )
 		
-	else
-		if ( !self:NPCCanPrimaryAttack() ) then return end
+	self:EmitSound("Weapon_EZ2_AR2_Proto.Single")
+	self:TakePrimaryAmmo( 1 )
+	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+	
+	if self.Owner:GetClass() == "npc_combine_s" && CurTime() > self:GetNextSecondaryFire() then
+		if math.random(1, 10) == 1 then
+			if SERVER then
+				if self.Owner:GetGroundSpeedVelocity()==Vector(0,0,0) then
+					timer.Simple(0.5, function()
+						self.Owner:SetSaveValue( "m_fIsElite", true )
+						self.Owner:SetSaveValue("m_hForcedGrenadeTarget", self.Owner:GetEnemy())
+					end)
+				end
+			end
+		end
+	end
+	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+end
+
+function SWEP:NPCShoot_Secondary( shootPos, shootDir )
+	timer.Simple(0.6,function()
+		if IsValid(self) and IsValid(self.Owner) then
+			local ball = ents.Create( "prop_combine_ball" )
+			ball:SetAngles( self.Owner:GetAngles() )
+			ball:SetPos( self.Owner:GetShootPos() )
+			ball:Spawn()
+			ball:Activate()
+			ball:SetOwner(self.Owner)
+			ball:Fire("explode","", GetConVar( "ez2_swep_proto_ar2_ball_explode_time" ):GetInt())
+			ball:SetSaveValue( "m_flRadius", 10 )
+			ball:SetSaveValue( "m_bLaunched", true )
+			ball:SetSaveValue( "m_bEmit", true )
+			ball:SetSaveValue( "m_bForward", true )
+			ball:SetSaveValue( "m_nLastThinkTick", -1 )
+			ball:SetSaveValue( "m_nMaxBounces", 9999 )
+			ball:SetSaveValue( "m_nState", 3 )
+			local phys = ball:GetPhysicsObject()
+			phys:SetVelocity( self.Owner:GetAimVector() * 2500 )
+			phys:AddGameFlag( FVPHYSICS_NO_NPC_IMPACT_DMG )
+			phys:SetMass( 750 )
+			phys:SetInertia( Vector( 500, 500, 500 ) )
+											
+			local ball2 = ents.Create( "prop_combine_ball" )
+			ball2:SetAngles( self.Owner:GetAngles() )
+			ball2:SetPos( self.Owner:GetShootPos() )
+			ball2:Spawn()
+			ball2:Activate()
+			ball2:SetOwner(self.Owner)
+			ball2:Fire("explode","", GetConVar( "ez2_swep_proto_ar2_ball_explode_time" ):GetInt())
+			ball2:SetSaveValue( "m_flRadius", 10 )
+			ball2:SetSaveValue( "m_bLaunched", true )
+			ball2:SetSaveValue( "m_bEmit", true )
+			ball2:SetSaveValue( "m_bForward", true )
+			ball2:SetSaveValue( "m_nLastThinkTick", -1 )
+			ball2:SetSaveValue( "m_nMaxBounces", 9999 )
+			ball2:SetSaveValue( "m_nState", 3 )
+			local phys2 = ball2:GetPhysicsObject()
+			phys2:SetVelocity( (self.Owner:GetAimVector():Angle() + Angle(0,-2.5,0)):Forward() * 2500 )
+			phys2:AddGameFlag( FVPHYSICS_NO_NPC_IMPACT_DMG )
+			phys2:SetMass( 750 )
+			phys2:SetInertia( Vector( 500, 500, 500 ) )
+							
+			local ball3 = ents.Create( "prop_combine_ball" )
+			ball3:SetAngles( self.Owner:GetAngles() )
+			ball3:SetPos( self.Owner:GetShootPos() )
+			ball3:Spawn()
+			ball3:Activate()
+			ball3:SetOwner(self.Owner)
+			ball3:Fire("explode","", GetConVar( "ez2_swep_proto_ar2_ball_explode_time" ):GetInt())
+			ball3:SetSaveValue( "m_flRadius", 10 )
+			ball3:SetSaveValue( "m_bLaunched", true )
+			ball3:SetSaveValue( "m_bEmit", true )
+			ball3:SetSaveValue( "m_bForward", true )
+			ball3:SetSaveValue( "m_nLastThinkTick", -1 )
+			ball3:SetSaveValue( "m_nMaxBounces", 9999 )
+			ball3:SetSaveValue( "m_nState", 3 )
+			local phys3 = ball3:GetPhysicsObject()
+			phys3:SetVelocity( (self.Owner:GetAimVector():Angle() + Angle(0,2.5,0)):Forward() * 2500 )
+			phys3:AddGameFlag( FVPHYSICS_NO_NPC_IMPACT_DMG )
+			phys3:SetMass( 750 )
+			phys3:SetInertia( Vector( 500, 500, 500 ) )
+							
+			self:EmitSound("Weapon_EZ2_AR2_Proto.AltFire_Single")
+			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+		end
+	end)
+end
+
+function SWEP:PrimaryAttack()
+
+	if ( !self:CanPrimaryAttack() ) then return end
+	if ( IsFirstTimePredicted() ) then
+		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		local bullet = {}
 		bullet.Num = GetConVar( "ez2_swep_proto_ar2_num" ):GetInt()
 		bullet.Src = self.Owner:GetShootPos()
-		bullet.Dir = self.Owner:GetAimVector()
-		bullet.Spread = Vector( 0.05, 0.05, 0 )
+		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
+					
+		if GetConVar( "ez_swep_no_bullet_spread" ):GetInt() == 0 then
+			bullet.Spread = Vector( 0.05, 0.05, 0 )
+		else
+			bullet.Spread = Vector( 0, 0, 0 )
+		end
+					
 		bullet.Force = 5
-		bullet.Damage = GetConVar("ez2_swep_proto_ar2_npc_dmg"):GetInt()
+		bullet.Damage = GetConVar("ez2_swep_proto_ar2_plr_dmg"):GetInt()
 		bullet.TracerName = self.TracerName
 		bullet.Callback	= function(a,b,c)
 			self:BulletPenetrate(a,b,c)
 		end
 		self.Owner:FireBullets( bullet )
-		
+				
+		if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
+			self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))
+		end
+			
+		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
+		self.Owner:SetAnimation( PLAYER_ATTACK1 )
+			
+		if GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 0 then
+			self:TakePrimaryAmmo( 1 )
+		else
+			self:TakePrimaryAmmo( 0 )
+		end
+					
 		self:EmitSound("Weapon_EZ2_AR2_Proto.Single")
-		self:TakePrimaryAmmo( 1 )
 		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
+	self.Idle = 0
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()
@@ -103,63 +186,98 @@ function SWEP:SecondaryAttack()
 		if self.Owner:GetAmmoCount( self.Secondary.Ammo ) > 0 or GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 1 then
 			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 			self:EmitSound("Weapon_EZ2_AR2_Proto.Special1")
-			--self:PlayAnim( "shake" )
 			self:SendWeaponAnim( ACT_VM_FIDGET )
 				if SERVER then
-					timer.Simple(0.65,function()
-						local cballspawner = ents.Create( "point_combine_ball_launcher" )
-							cballspawner:SetAngles( self.Owner:EyeAngles())
-							cballspawner:SetPos( self.Owner:GetShootPos() + self.Owner:GetAimVector()*14)
-							cballspawner:SetKeyValue( "minspeed",2200 )
-							cballspawner:SetKeyValue( "maxspeed", 2200 )
-							cballspawner:SetKeyValue( "ballradius", "5" )
-							cballspawner:SetKeyValue( "ballcount", "1" )
-							cballspawner:SetKeyValue( "maxballbounces", "9999" )
-							cballspawner:SetKeyValue( "launchconenoise", 2 )
-							cballspawner:Spawn()
-							cballspawner:Activate()
-							cballspawner:Fire( "LaunchBall" )
-							cballspawner:Fire( "LaunchBall" )
-							cballspawner:Fire( "LaunchBall" )
-							cballspawner:Fire("kill","",0)
-								if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
-									self.Owner:ViewPunch(Angle( -10,0,0 ))
-								end
-								if GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 0 then
-									self:TakeSecondaryAmmo( 1 )
-								else
-									self:TakeSecondaryAmmo( 0 )
-								end
+					timer.Simple( 0.6, function()
+						if IsValid(self) and IsValid(self.Owner) then
+							local ball = ents.Create( "prop_combine_ball" )
+							ball:SetAngles( self.Owner:GetAngles() )
+							ball:SetPos( self.Owner:GetShootPos() )
+							ball:Spawn()
+							ball:Activate()
+							ball:SetOwner(self.Owner)
+							ball:Fire("explode","", GetConVar( "ez2_swep_proto_ar2_ball_explode_time" ):GetInt())
+							ball:SetSaveValue( "m_flRadius", 10 )
+							ball:SetSaveValue( "m_bLaunched", true )
+							ball:SetSaveValue( "m_bEmit", true )
+							ball:SetSaveValue( "m_bForward", true )
+							ball:SetSaveValue( "m_nLastThinkTick", -1 )
+							ball:SetSaveValue( "m_nMaxBounces", 9999 )
+							ball:SetSaveValue( "m_nState", 3 )
+							local phys = ball:GetPhysicsObject()
+							phys:SetVelocity( self.Owner:GetAimVector() * 2500 )
+							phys:AddGameFlag( bit.bor( FVPHYSICS_DMG_DISSOLVE, FVPHYSICS_HEAVY_OBJECT ) )
+							phys:SetMass( 750 )
+							phys:SetInertia( Vector( 500, 500, 500 ) )
+											
+							local ball2 = ents.Create( "prop_combine_ball" )
+							ball2:SetAngles( self.Owner:GetAngles() )
+							ball2:SetPos( self.Owner:GetShootPos() )
+							ball2:Spawn()
+							ball2:Activate()
+							ball2:SetOwner(self.Owner)
+							ball2:Fire("explode","", GetConVar( "ez2_swep_proto_ar2_ball_explode_time" ):GetInt())
+							ball2:SetSaveValue( "m_flRadius", 10 )
+							ball2:SetSaveValue( "m_bLaunched", true )
+							ball2:SetSaveValue( "m_bEmit", true )
+							ball2:SetSaveValue( "m_bForward", true )
+							ball2:SetSaveValue( "m_nLastThinkTick", -1 )
+							ball2:SetSaveValue( "m_nMaxBounces", 9999 )
+							ball2:SetSaveValue( "m_nState", 3 )
+							local phys2 = ball2:GetPhysicsObject()
+							phys2:SetVelocity( (self.Owner:GetAimVector():Angle() + Angle(0,-2.5,0)):Forward() * 2500 )
+							phys2:AddGameFlag( bit.bor( FVPHYSICS_DMG_DISSOLVE, FVPHYSICS_HEAVY_OBJECT ) )
+							phys2:SetMass( 750 )
+							phys2:SetInertia( Vector( 500, 500, 500 ) )
+							
+							local ball3 = ents.Create( "prop_combine_ball" )
+							ball3:SetAngles( self.Owner:GetAngles() )
+							ball3:SetPos( self.Owner:GetShootPos() )
+							ball3:Spawn()
+							ball3:Activate()
+							ball3:SetOwner(self.Owner)
+							ball3:Fire("explode","", GetConVar( "ez2_swep_proto_ar2_ball_explode_time" ):GetInt())
+							ball3:SetSaveValue( "m_flRadius", 10 )
+							ball3:SetSaveValue( "m_bLaunched", true )
+							ball3:SetSaveValue( "m_bEmit", true )
+							ball3:SetSaveValue( "m_bForward", true )
+							ball3:SetSaveValue( "m_nLastThinkTick", -1 )
+							ball3:SetSaveValue( "m_nMaxBounces", 9999 )
+							ball3:SetSaveValue( "m_nState", 3 )
+							local phys3 = ball3:GetPhysicsObject()
+							phys3:SetVelocity( (self.Owner:GetAimVector():Angle() + Angle(0,2.5,0)):Forward() * 2500 )
+							phys3:AddGameFlag( bit.bor( FVPHYSICS_DMG_DISSOLVE, FVPHYSICS_HEAVY_OBJECT ) )
+							phys3:SetMass( 750 )
+							phys3:SetInertia( Vector( 500, 500, 500 ) )
+							
+							self:EmitSound("Weapon_EZ2_AR2_Proto.AltFire_Single")
+							self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+							self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+							if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
+								self.Owner:ViewPunch(Angle( -10,0,0 ))
+							end
+							if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
+								self:TakeSecondaryAmmo( 0 )
+							else
+								self:TakeSecondaryAmmo( 1 )
+							end
 							self:SendWeaponAnim( ACT_VM_SECONDARYATTACK )
 							self.Owner:SetAnimation( PLAYER_ATTACK1 )
-							self:EmitSound("Weapon_EZ2_AR2_Proto.AltFire_Single")
-							--print("Firing Energy Ball")
+							self.Idle = 0
+							self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+						end
 					end)
 				end
-			timer.Simple(0.67,function()
-				if IsValid(self) and IsValid(self.Owner) then
-					for k,v in pairs(ents.FindInSphere(self.Owner:GetShootPos(),20)) do
-						if IsValid(v) and string.find(v:GetClass(),"prop_combine_ball") and !IsValid(v:SetOwner()) and SERVER then
-							v:SetOwner(self.Owner)
-							v:GetPhysicsObject():AddGameFlag( FVPHYSICS_WAS_THROWN )
-							v:Fire("explode","",GetConVar( "ez2_swep_proto_ar2_ball_explode_time" ):GetInt())
-							--print("Timer Hit")
-						end
-					end
-				end
-			end)
-			self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
+			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
-			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		else 
 			self:EmitSound("Weapon_IRifle.Empty")
 			self:SetNextPrimaryFire( CurTime() + 0.25 )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
-			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		end
 	end
+	self.Idle = 0
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:DoImpactEffect( tr, nDamageType )

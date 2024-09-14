@@ -23,6 +23,15 @@ SWEP.LowerToIdleTimer = CurTime()
 
 SWEP.TracerName = "Tracer"
 
+hook.Add( "EntityEmitSound", "EZ_SWEPS_DO_ALTIFRE",function(data)--we use sound manipulation to make people think soldiers can actually use smg grenades
+	local ar2_ball = { [Sound("Weapon_CombineGuard.Special1")] = true }
+	local AltFire = ar2_ball[data.OriginalSoundName]
+	if AltFire and data.Entity:GetClass() == "npc_combine_s" then
+		data.Entity:GetActiveWeapon():NPCShoot_Secondary()
+		return false
+	end
+end)
+
 function SWEP:Equip()
 	if self.Owner:GetClass() == "npc_citizen" then
 		self.Weapon.Owner:Fire( "DisableWeaponPickup" )
@@ -47,7 +56,7 @@ function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
 		elseif (mat == MAT_WOOD or mat == MAT_PLASTIC or mat == MAT_GLASS) then
 			fDamageMulti = 0.8
 		end
-		local bullet = {Num=1,Src=trace.HitPos,Dir=tr.Normal,Spread=vector_origin,Tracer=1,TracerName=self.TracerName,Force=5,Damage=(dmginfo:GetDamage()*fDamageMulti),HullSize=2}
+		local bullet = {Num=1, Src=trace.HitPos, Dir=tr.Normal, Spread=vector_origin, Tracer=1, TracerName=self.TracerName, Force=5, Damage=(dmginfo:GetDamage()*fDamageMulti), HullSize=2}
 		
 		timer.Simple(0, function()
 		if not IsFirstTimePredicted() then return end
@@ -59,7 +68,7 @@ end
 
 function SWEP:Reload()
 	if !self.Owner:IsNPC() then
-		if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetInt() == 1 then
+		if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetBool() then
 			self:PlayAnim( self.FirstDrawAnimation )
 			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		end
@@ -88,13 +97,12 @@ function SWEP:PlayAnim(a,c,t)
 end
 
 function SWEP:Initialize()
-	self:SetWeaponHoldType( self.HoldType )
+	self:SetHoldType( self.HoldType )
 	
 	if !self.Owner:IsNPC() then
 		self.Idle = 0
 		self.IdleTimer = CurTime() + 4
 	end
-	-- self.Dot = Material("materials/ez2crosshair/crosshairs.vtf")
 end
 
 function SWEP:DrawWeaponSelection(x,y,wide,tall)
@@ -102,12 +110,6 @@ function SWEP:DrawWeaponSelection(x,y,wide,tall)
 		draw.SimpleText( self.SelectIcon ,"WeaponIcons",x+wide/2,y+tall*.2,c,TEXT_ALIGN_CENTER)
 		self:PrintWeaponInfo(x+wide+20,y+tall*.95,alpha)
 end
-
--- function SWEP:DrawHUD()
-	-- surface.SetDrawColor( 255, 255, 255, 255 )
-	-- surface.SetMaterial( Material("materials/ez2crosshair/357.png") )
-	-- surface.DrawTexturedRect( ScrW() / 2 - 32, ScrH() / 2 - 32, 64, 64 )
--- end
 
 function SWEP:Deploy()
 	if !self.Owner:IsNPC() then
@@ -170,7 +172,7 @@ function SWEP:Think()
 			self.Idle = 1
 		end
 		
-		if GetConVar( "ez_swep_lower_on_ally" ):GetInt() == 1 then
+		if GetConVar( "ez_swep_lower_on_ally" ):GetBool() then
 		function IdleToLowerAnimation()
 			if self.IdleToLower == 0 and self.IdleLower == 0 and self.IdleToLowerTimer < CurTime() then
 				self:SendWeaponAnim(ACT_VM_IDLE_TO_LOWERED)

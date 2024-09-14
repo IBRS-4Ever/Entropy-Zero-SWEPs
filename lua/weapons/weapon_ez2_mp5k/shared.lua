@@ -30,67 +30,65 @@ SWEP.NPCReloadSound = Sound ( "Weapon_ez2_MP5K.Reload" )
 
 SWEP.SelectIcon = "f"
 
+function SWEP:NPCShoot_Primary( shootPos, shootDir )
+	if ( !self:NPCCanPrimaryAttack() ) then return end
+	local bullet = {}
+	bullet.Num = 1
+	bullet.Src = self.Owner:GetShootPos()
+	bullet.Dir = self.Owner:GetAimVector()
+	bullet.Spread = Vector( 0.03, 0.03, 0 )
+	bullet.Force = 5
+	bullet.Damage = GetConVar("ez2_swep_mp5k_npc_dmg"):GetInt()
+	bullet.AmmoType = self.Primary.Ammo
+	bullet.Callback	= function(a,b,c)
+		self:BulletPenetrate(a,b,c)
+	end
+	self.Owner:FireBullets( bullet )
+		
+	self:EmitSound(self.Primary.Sound)
+	self:TakePrimaryAmmo( 1 )
+	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+end
+
 function SWEP:PrimaryAttack()
- 	
-	if !self.Owner:IsNPC() then
-		if ( !self:CanPrimaryAttack() ) then return end
-		if ( IsFirstTimePredicted() ) then
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			local bullet = {}
-			bullet.Num = 1
-			bullet.Src = self.Owner:GetShootPos()
-			bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-			
-			if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
-				self.Owner:ViewPunch(Angle( -0.5, math.Rand( -0.05, 0.05 ),0))
-			end
-				
-			if GetConVar( "ez_swep_no_bullet_spread" ):GetInt() == 0 then
-				bullet.Spread = Vector( 0.03, 0.03, 0 )
-			else
-				bullet.Spread = Vector( 0, 0, 0 )
-			end
-			bullet.Force = 5
-			bullet.Damage = GetConVar("ez2_swep_mp5k_plr_dmg"):GetInt()
-			bullet.Callback	= function(a,b,c)
-				self:BulletPenetrate(a,b,c)
-			end
-			self.Owner:FireBullets( bullet )
-				
-			self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-			self.Owner:SetAnimation( PLAYER_ATTACK1 )
-			if GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 0 then
-				self:TakePrimaryAmmo( 1 )
-			else
-				self:TakePrimaryAmmo( 0 )
-			end
-			self:EmitSound(self.Primary.Sound)
-			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-			self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
-		end
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-	
-	else
-		if ( !self:NPCCanPrimaryAttack() ) then return end
+	if ( !self:CanPrimaryAttack() ) then return end
+	if ( IsFirstTimePredicted() ) then
+		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		local bullet = {}
 		bullet.Num = 1
 		bullet.Src = self.Owner:GetShootPos()
-		bullet.Dir = self.Owner:GetAimVector()
-		bullet.Spread = Vector( 0.03, 0.03, 0 )
+		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
+			
+		if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
+			self.Owner:ViewPunch(Angle( -0.5, math.Rand( -0.05, 0.05 ),0))
+		end
+				
+		if GetConVar( "ez_swep_no_bullet_spread" ):GetBool() then
+			bullet.Spread = Vector( 0, 0, 0 )
+		else
+			bullet.Spread = Vector( 0.03, 0.03, 0 )
+		end
 		bullet.Force = 5
-		bullet.Damage = GetConVar("ez2_swep_mp5k_npc_dmg"):GetInt()
-		bullet.AmmoType = self.Primary.Ammo
+		bullet.Damage = GetConVar("ez2_swep_mp5k_plr_dmg"):GetInt()
 		bullet.Callback	= function(a,b,c)
 			self:BulletPenetrate(a,b,c)
 		end
 		self.Owner:FireBullets( bullet )
-		
+				
+		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
+		self.Owner:SetAnimation( PLAYER_ATTACK1 )
+		if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
+			self:TakePrimaryAmmo( 0 )
+		else
+			self:TakePrimaryAmmo( 1 )
+		end
 		self:EmitSound(self.Primary.Sound)
-		self:TakePrimaryAmmo( 1 )
 		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
+	self.Idle = 0
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()
