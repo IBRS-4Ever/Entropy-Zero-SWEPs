@@ -72,7 +72,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	self:EmitSound("Weapon_shotgun.Single")
 	self:TakePrimaryAmmo( 1 )
 	
-	if !self.Owner:GetEnemy() then return end
+	if !(self.Owner:GetEnemy()) then return end
 	if self:Clip1() >= 2 && self.Owner:GetEnemy():GetPos():Distance(self.Owner:GetPos()) <= 250 then
 		self:NPCShoot_Secondary()
 	end

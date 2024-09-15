@@ -1,3 +1,6 @@
+
+CombineAI_SMG = CombineAI_SMG or {}
+CombineAI_SMG["weapon_ez2_smg1"] = true
 SWEP.Base           = "weapon_ez2_base"
 SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
@@ -66,7 +69,7 @@ end
 
 function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 	timer.Simple(0.6,function()
-		if IsValid(self) and IsValid(self.Owner) then
+		if IsValid(self) and IsValid(self.Owner) and IsValid(self.Owner:GetEnemy()) then
 			local grenade = ents.Create( "grenade_ar2" )
 			grenade:SetAngles( self.Owner:GetAngles() )
 			grenade:SetVelocity( (self.Owner:GetEnemy():GetPos()-self.Owner:GetPos()):Length() * 1.5 * self.Owner:GetAimVector() + self.Owner:GetEnemy():GetUp() * 50 )
