@@ -28,7 +28,7 @@ hook.Add( "EntityEmitSound", "EZ_SWEPS_DO_ALTIFRE",function(data)--we use sound 
 	local AltFire = ar2_ball[data.OriginalSoundName]
 	local Entity = data.Entity
 	if AltFire and Entity:GetClass() == "npc_combine_s" then
-		if !(scripted_ents.IsBasedOn(Entity:GetActiveWeapon(), "weapon_ez2_base")) then print("false") return end
+		if !(weapons.IsBasedOn(Entity:GetActiveWeapon():GetClass(), "weapon_ez2_base")) then return end
 		Entity:GetActiveWeapon():NPCShoot_Secondary()
 		return false
 	end
