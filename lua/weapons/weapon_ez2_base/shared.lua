@@ -172,57 +172,53 @@ function SWEP:Think()
 			self.Idle = 1
 		end
 		
-		if GetConVar( "ez_swep_lower_on_ally" ):GetBool() then
-		function IdleToLowerAnimation()
-			if self.IdleToLower == 0 and self.IdleLower == 0 and self.IdleToLowerTimer < CurTime() then
-				self:SendWeaponAnim(ACT_VM_IDLE_TO_LOWERED)
-				self.IdleToLower = 1
-				self.IdleToLowerTimer = CurTime() + 0.5
-				self.IdleLower = 1
-				self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-				print("IdleToLower")
-			end
-			
-			if self.IdleLower == 1 and self.IdleToLower == 1 and self.IdleLowerTimer < CurTime() then
-				self:SendWeaponAnim(ACT_VM_IDLE_LOWERED)
-				--self.IdleLower = 0
-				self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-				self.LowerToIdle = 0
-				self.LowerToIdleTimer = CurTime() + 1
-				print("IdleLower")
-			end
-		end
-		
-		function LowerToIdleAnimation()
-			if self.LowerToIdle == 0 and self.IdleLower == 1 and self.LowerToIdleTimer < CurTime() then
-				self:SendWeaponAnim(ACT_VM_LOWERED_TO_IDLE)
-				self.IdleLower = 0
-				self.IdleToLower = 0
-				self.LowerToIdle = 1
-				self.IdleToLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-				print("LowerToIdle")
-				self.Idle = 0
-				self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			end
-		end
-			
-		-- timer.Create( "CheckFriendly", 0.5, 0, function()
-		if CLIENT then return end -- 只在服务端运行此代码
-		if not IsValid(self.Owner) or not self.Owner:IsPlayer() then return end  -- 确保武器的拥有者是玩家
+		if CLIENT then
+			if GetConVar( "ez_swep_lower_on_ally" ):GetBool() then
+				function IdleToLowerAnimation()
+					if self.IdleToLower == 0 and self.IdleLower == 0 and self.IdleToLowerTimer < CurTime() then
+						self:SendWeaponAnim(ACT_VM_IDLE_TO_LOWERED)
+						self.IdleToLower = 1
+						self.IdleToLowerTimer = CurTime() + 0.5
+						self.IdleLower = 1
+						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+					end
+					
+					if self.IdleLower == 1 and self.IdleToLower == 1 and self.IdleLowerTimer < CurTime() then
+						self:SendWeaponAnim(ACT_VM_IDLE_LOWERED)
+						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+						self.LowerToIdle = 0
+						self.LowerToIdleTimer = CurTime() + 1
+					end
+				end
+				
+				function LowerToIdleAnimation()
+					if self.LowerToIdle == 0 and self.IdleLower == 1 and self.LowerToIdleTimer < CurTime() then
+						self:SendWeaponAnim(ACT_VM_LOWERED_TO_IDLE)
+						self.IdleLower = 0
+						self.IdleToLower = 0
+						self.LowerToIdle = 1
+						self.IdleToLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+						self.Idle = 0
+						self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+					end
+				end
+					
+				if not IsValid(self.Owner) or not self.Owner:IsPlayer() then return end  -- 确保武器的拥有者是玩家
 
-		--if self.Owner:ShouldDrawLocalPlayer() then return end -- 确保玩家不是第三人称视角，只有第一人称视角时才可触发
-
-		-- 获取玩家凝视的实体
-		local trace = self.Owner:GetEyeTrace()
-		if not IsValid(trace.Entity) or not trace.Entity:IsNPC()then return LowerToIdleAnimation() end
-		
-		local Friendly = IsFriendEntityName(trace.Entity:GetClass())
-		if Friendly then
-				IdleToLowerAnimation() -- 调用函数
-		end
-		-- end )
+				local trace = self.Owner:GetEyeTrace()
+				if not IsValid(trace.Entity) or not trace.Entity:IsNPC()then return LowerToIdleAnimation() end
+				
+				local Friendly = IsFriendEntityName(trace.Entity:GetClass())
+				if Friendly then
+					IdleToLowerAnimation() -- 调用函数
+				end
+			end
 		end
 	end
+end
+
+function SWEP:GetNPCBulletSpread( proficiency )
+    return 1
 end
 
 if CLIENT then

@@ -186,10 +186,6 @@ function SWEP:GetNPCBurstSettings()
     return 6, 12, 1.4
 end
 
-function SWEP:GetNPCBulletSpread( proficiency )
-    return 4
-end
-
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_shotgun", title = "Shotgun (EZ2)" } )
 
 if ( SERVER ) then return end

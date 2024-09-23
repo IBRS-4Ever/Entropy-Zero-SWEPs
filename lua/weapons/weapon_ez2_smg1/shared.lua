@@ -6,14 +6,14 @@ SWEP.AdminOnly = false
 SWEP.PrintName				= "#ez2_swep.smg1"
 SWEP.Slot				= 2
 SWEP.SlotPos				= 20
-SWEP.UseHands = false
+SWEP.UseHands = false 
 SWEP.ViewModel        = "models/weapons/ez2/v_smg1.mdl"
 SWEP.WorldModel = "models/weapons/w_smg1.mdl"
 SWEP.FiresUnderwater = false
 
 SWEP.Primary.Automatic			= true
 SWEP.Primary.ClipSize = 45
-SWEP.Primary.Delay = 0.1
+SWEP.Primary.Delay = 0.07
 SWEP.Primary.DefaultClip = 225
 SWEP.Primary.Ammo = "SMG1"
 
@@ -167,10 +167,6 @@ end
 
 function SWEP:GetNPCBurstSettings()
     return 6, 12, 0.1
-end
-
-function SWEP:GetNPCBulletSpread( proficiency )
-    return 4
 end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_smg1", title = "SMG (EZ2)" } )

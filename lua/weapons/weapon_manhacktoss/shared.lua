@@ -38,9 +38,9 @@ SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "none"
 
 function SWEP:Reload()
-self.Weapon:DefaultReload(ACT_VM_RELOAD) 
-self.Idle = 0
-self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	self.Weapon:DefaultReload(ACT_VM_RELOAD) 
+	self.Idle = 0
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:Deploy()
@@ -48,13 +48,14 @@ function SWEP:Deploy()
 	self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
 	self.Idle = 0
 	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	return true 
 end
 
 function SWEP:Initialize()
-game.AddAmmoType( { name = "manhack" } )
-self:SetWeaponHoldType( self.HoldType )
-self.Idle = 0
-self.IdleTimer = CurTime() + 4
+	game.AddAmmoType( { name = "manhack" } )
+	self:SetWeaponHoldType( self.HoldType )
+	self.Idle = 0
+	self.IdleTimer = CurTime() + 4
 end
 
 function SWEP:PrimaryAttack()

@@ -33,6 +33,11 @@ SWEP.SelectIcon = "g"
 
 SWEP.TracerName = "AR2Tracer"
 
+function SWEP:Holster( wep )
+	timer.Remove( "AR2AltFire" )
+	return true
+end
+
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
@@ -72,7 +77,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 end
 
 function SWEP:NPCShoot_Secondary( shootPos, shootDir )
-	timer.Simple(0.6,function()
+	timer.Create( "NPC_AR2AltFire", 0.6, 1, function()
 		if IsValid(self) and IsValid(self.Owner) then
 			local ball = ents.Create( "prop_combine_ball" )
 			ball:SetAngles( self.Owner:GetAngles() )
@@ -138,6 +143,7 @@ function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		end
+		timer.Remove( "NPC_AR2AltFire" )
 	end)
 end
 
@@ -192,7 +198,7 @@ function SWEP:SecondaryAttack()
 			self:EmitSound("Weapon_CombineGuard.Special1")
 			self:SendWeaponAnim( ACT_VM_FIDGET )
 				if SERVER then
-					timer.Simple( 0.6, function()
+					timer.Create( "AR2AltFire", 0.6, 1, function()
 						if IsValid(self) and IsValid(self.Owner) then
 							local ball = ents.Create( "prop_combine_ball" )
 							ball:SetAngles( self.Owner:GetAngles() )
@@ -228,6 +234,7 @@ function SWEP:SecondaryAttack()
 							self.Idle = 0
 							self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 						end
+						timer.Remove( "AR2AltFire" )
 					end)
 				end
 			self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
@@ -259,10 +266,6 @@ end
 
 function SWEP:GetNPCBurstSettings()
     return 6, 12, 0.1
-end
-
-function SWEP:GetNPCBulletSpread( proficiency )
-    return 4
 end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_ar2", title = "AR2 (EZ2)" } )

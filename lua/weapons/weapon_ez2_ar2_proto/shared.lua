@@ -32,6 +32,11 @@ SWEP.CrosshairY		= 0.25
 
 SWEP.SelectIcon = "g"
 
+function SWEP:Holster( wep )
+	timer.Remove( "PrototypeAR2AltFire" )
+	return true
+end
+
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
@@ -39,7 +44,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	bullet.Num = GetConVar( "ez2_swep_proto_ar2_num" ):GetInt()
 	bullet.Src = self.Owner:GetShootPos()
 	bullet.Dir = self.Owner:GetAimVector()
-	bullet.Spread = Vector( 0.05, 0.05, 0 )
+	bullet.Spread = Vector( 0.02, 0.02, 0 )
 	bullet.Force = 5
 	bullet.Damage = GetConVar("ez2_swep_proto_ar2_npc_dmg"):GetInt()
 	bullet.TracerName = self.TracerName
@@ -69,7 +74,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 end
 
 function SWEP:NPCShoot_Secondary( shootPos, shootDir )
-	timer.Simple(0.6,function()
+	timer.Create( "NPC_PrototypeAR2AltFire", 0.6, 1, function()
 		if IsValid(self) and IsValid(self.Owner) then
 			local ball = ents.Create( "prop_combine_ball" )
 			ball:SetAngles( self.Owner:GetAngles() )
@@ -135,6 +140,7 @@ function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		end
+		timer.Remove( "NPC_PrototypeAR2AltFire" )
 	end)
 end
 
@@ -149,7 +155,7 @@ function SWEP:PrimaryAttack()
 		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
 					
 		if GetConVar( "ez_swep_no_bullet_spread" ):GetInt() == 0 then
-			bullet.Spread = Vector( 0.05, 0.05, 0 )
+			bullet.Spread = Vector( 0.02, 0.02, 0 )
 		else
 			bullet.Spread = Vector( 0, 0, 0 )
 		end
@@ -191,7 +197,7 @@ function SWEP:SecondaryAttack()
 			self:EmitSound("Weapon_EZ2_AR2_Proto.Special1")
 			self:SendWeaponAnim( ACT_VM_FIDGET )
 				if SERVER then
-					timer.Simple( 0.6, function()
+					timer.Create( "PrototypeAR2AltFire", 0.6, 1, function()
 						if IsValid(self) and IsValid(self.Owner) then
 							local ball = ents.Create( "prop_combine_ball" )
 							ball:SetAngles( self.Owner:GetAngles() )
@@ -267,6 +273,7 @@ function SWEP:SecondaryAttack()
 							self.Idle = 0
 							self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 						end
+						timer.Remove( "PrototypeAR2AltFire" )
 					end)
 				self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 				self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
@@ -299,16 +306,6 @@ end
 function SWEP:GetNPCBurstSettings()
     return 12, 24, 0.1
 end
-
-function SWEP:GetNPCBulletSpread( proficiency )
-    return 4
-end
-
--- function SWEP:GetCapabilities()
-
-	-- return bit.bor( CAP_WEAPON_RANGE_ATTACK1, CAP_INNATE_RANGE_ATTACK1 )
-
--- end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_ar2_proto", title = "Prototype AR2 (EZ2)" } )
 
