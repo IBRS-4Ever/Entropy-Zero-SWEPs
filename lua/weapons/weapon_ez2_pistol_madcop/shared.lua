@@ -1,11 +1,11 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Spawnable				= true
+SWEP.AdminSpawnable			= true
 SWEP.AdminOnly = false
-SWEP.PrintName				= "Pistol (Madcop)"		-- Weapon name (Shown on HUD)
-SWEP.Slot				= 1			-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos				= 20			-- Position in the slot
+SWEP.PrintName				= "#ez2_swep.pistol_madcop"
+SWEP.Slot				= 1
+SWEP.SlotPos				= 20
 SWEP.UseHands = false
 SWEP.ViewModel        = "models/weapons/madcop/v_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
@@ -27,7 +27,10 @@ SWEP.HoldType = "pistol"
 SWEP.ReloadSound = "Weapon_EZ2_Pistol_Madcop.Reload"
 SWEP.FirstDrawAnimation = "drawfirst"
 
-SWEP.SelectIcon = "d"
+SWEP.CrosshairX		= 0.25
+SWEP.CrosshairY		= 0
+
+SWEP.SelectIcon = "b"
 
 function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
@@ -73,4 +76,4 @@ function SWEP:SecondaryAttack()
 end
 
 if ( SERVER ) then return end
-killicon.AddAlias( "weapon_ez2_pistol_madcop", "weapon_pistol" )
+killicon.AddFont( "weapon_ez2_pistol_madcop", "EZ2HUD_Kill_ICON", SWEP.SelectIcon, Color( 255, 80, 0, 255 ) )

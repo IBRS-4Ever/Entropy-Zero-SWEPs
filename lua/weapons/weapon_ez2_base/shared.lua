@@ -1,11 +1,10 @@
 SWEP.Base           = "weapon_base"
-SWEP.Category				= "Entropy : Zero" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Author				= "Insane Black Rock Shooter" --Author Tooltip
-SWEP.DrawAmmo				= true		-- Should draw the default HL2 ammo counter if enabled in the GUI.
--- SWEP.AutoSwitchTo			= true		-- Auto switch to if we pick it up
--- SWEP.AutoSwitchFrom			= true		-- Auto switch from if you pick up a better weapon
--- SWEP.Weight				= 30			-- This controls how "good" the weapon is for autopickup.
+SWEP.Category				= "Entropy : Zero"
+SWEP.DrawAmmo				= true
 SWEP.UseHands = true
+
+SWEP.BounceWeaponIcon	= false
+SWEP.DrawWeaponInfoBox	= false
 
 SWEP.Idle = 0
 SWEP.IdleTimer = CurTime()
@@ -20,6 +19,9 @@ SWEP.IdleLower = 0
 SWEP.IdleLowerTimer = CurTime()
 SWEP.LowerToIdle = 0
 SWEP.LowerToIdleTimer = CurTime()
+
+SWEP.CrosshairX		= 0.0
+SWEP.CrosshairY		= 0.0
 
 SWEP.TracerName = "Tracer"
 
@@ -107,11 +109,7 @@ function SWEP:Initialize()
 	end
 end
 
-function SWEP:DrawWeaponSelection(x,y,wide,tall)
-	local c=self.TextColor or Color(255,220,0)
-		draw.SimpleText( self.SelectIcon ,"WeaponIcons",x+wide/2,y+tall*.2,c,TEXT_ALIGN_CENTER)
-		self:PrintWeaponInfo(x+wide+20,y+tall*.95,alpha)
-end
+
 
 function SWEP:Deploy()
 	if !self.Owner:IsNPC() then
@@ -224,5 +222,30 @@ function SWEP:Think()
 		end
 		-- end )
 		end
+	end
+end
+
+if CLIENT then
+	surface.CreateFont( "EZ2HUD", {
+		font = "ez2_hud",
+		size = 128
+	} )
+
+	surface.CreateFont( "EZ2HUD_Kill_ICON", {
+		font = "ez2_hud",
+		size = 80
+	} )
+
+	local crosshairs = Material("hud/ez2_crosshairs.vmt")
+	function SWEP:DoDrawCrosshair(x, y)
+		if x == 0 and y == 0 then return false end
+		surface.SetDrawColor(Color(255,255,255))
+		surface.SetMaterial(crosshairs)
+		surface.DrawTexturedRectUV( x-32, y-32, 64, 64, self.CrosshairX, self.CrosshairY, self.CrosshairX+0.25, self.CrosshairY+0.25)
+		return true
+	end
+
+	function SWEP:DrawWeaponSelection(x,y,wide,tall)
+		draw.SimpleText( self.SelectIcon, 'EZ2HUD', x + wide / 2, y + tall * 0.1 + 30, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
 	end
 end

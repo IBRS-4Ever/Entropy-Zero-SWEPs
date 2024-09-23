@@ -1,12 +1,11 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Spawnable				= true
+SWEP.AdminSpawnable			= true
 SWEP.AdminOnly = false
-SWEP.PrintName				= "MP5K (EZ2)"		-- Weapon name (Shown on HUD)
-SWEP.Slot				= 2		-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos				= 20			-- Position in the slot
-SWEP.UseHands = true
+SWEP.PrintName				= "#ez2_swep.mp5k"
+SWEP.Slot				= 2
+SWEP.SlotPos				= 20
 SWEP.ViewModel        = "models/weapons/ez2/c_mp5k.mdl"
 SWEP.WorldModel = "models/weapons/w_mp5k.mdl"
 SWEP.FiresUnderwater = false
@@ -27,6 +26,9 @@ SWEP.Secondary.Ammo = "none"
 SWEP.HoldType = "smg"
 SWEP.ReloadSound = ""
 SWEP.NPCReloadSound = Sound ( "Weapon_ez2_MP5K.Reload" )
+
+SWEP.CrosshairX		= 0.75
+SWEP.CrosshairY		= 0.25
 
 SWEP.SelectIcon = "f"
 
@@ -110,4 +112,4 @@ end
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_mp5k", title = "MP5K (EZ2)" } )
 
 if ( SERVER ) then return end
-killicon.AddFont( "weapon_ez2_mp5k", "WeaponIcons", "f", Color( 255, 80, 0, 255 ) )
+killicon.AddFont( "weapon_ez2_mp5k", "EZ2HUD_Kill_ICON", SWEP.SelectIcon, Color( 255, 80, 0, 255 ) )

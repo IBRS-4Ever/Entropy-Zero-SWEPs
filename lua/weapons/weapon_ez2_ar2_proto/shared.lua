@@ -1,13 +1,11 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Spawnable				= true
+SWEP.AdminSpawnable			= true
 SWEP.AdminOnly = false
-if language then
-	SWEP.PrintName				= language.GetPhrase( "ez_swep.prototype.ar2" ) -- "Prototype AR2 (EZ2)"		-- Weapon name (Shown on HUD)
-end
-SWEP.Slot				= 2			-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos				= 20			-- Position in the slot
+SWEP.PrintName				= "#ez2_swep.prototype_ar2"
+SWEP.Slot				= 2
+SWEP.SlotPos				= 20
 SWEP.ViewModel        = "models/weapons/ez2/c_ar2_proto.mdl"
 SWEP.WorldModel = "models/weapons/w_irifle.mdl"
 
@@ -29,9 +27,13 @@ SWEP.NPCReloadSound = "Weapon_AR2.Reload"
 
 SWEP.TracerName = "AR2Tracer"
 
-SWEP.SelectIcon = "l"
+SWEP.CrosshairX		= 0.25
+SWEP.CrosshairY		= 0.25
+
+SWEP.SelectIcon = "g"
 
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
+	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
 	local bullet = {}
 	bullet.Num = GetConVar( "ez2_swep_proto_ar2_num" ):GetInt()
@@ -161,7 +163,8 @@ function SWEP:PrimaryAttack()
 		self.Owner:FireBullets( bullet )
 				
 		if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
-			self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))
+			-- self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))
+			self.Owner:ViewPunch(Angle( -0.25, math.Rand( -0.05, 0.05 ),0))
 		end
 			
 		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
@@ -251,8 +254,6 @@ function SWEP:SecondaryAttack()
 							phys3:SetInertia( Vector( 500, 500, 500 ) )
 							
 							self:EmitSound("Weapon_EZ2_AR2_Proto.AltFire_Single")
-							self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-							self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 							if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
 								self.Owner:ViewPunch(Angle( -10,0,0 ))
 							end
@@ -267,9 +268,9 @@ function SWEP:SecondaryAttack()
 							self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 						end
 					end)
+				self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
+				self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 				end
-			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		else 
 			self:EmitSound("Weapon_IRifle.Empty")
 			self:SetNextPrimaryFire( CurTime() + 0.25 )
@@ -312,4 +313,4 @@ end
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_ar2_proto", title = "Prototype AR2 (EZ2)" } )
 
 if ( SERVER ) then return end
-killicon.AddAlias( "weapon_ez2_ar2_proto", "weapon_ar2" )
+killicon.AddFont( "weapon_ez2_ar2_proto", "EZ2HUD_Kill_ICON", SWEP.SelectIcon, Color( 255, 80, 0, 255 ) )

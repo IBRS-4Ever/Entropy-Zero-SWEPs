@@ -1,11 +1,11 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Spawnable				= true
+SWEP.AdminSpawnable			= true
 SWEP.AdminOnly = false
-SWEP.PrintName				= "AR2 (EZ2)"		-- Weapon name (Shown on HUD)
-SWEP.Slot				= 2			-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos				= 20			-- Position in the slot
+SWEP.PrintName				= "#ez2_swep.ar2"
+SWEP.Slot				= 2
+SWEP.SlotPos				= 20
 SWEP.ViewModel        = "models/weapons/ez2/c_ar2.mdl"
 SWEP.WorldModel = "models/weapons/w_irifle.mdl"
 
@@ -26,11 +26,15 @@ SWEP.HoldType = "ar2"
 SWEP.ReloadSound = ""
 SWEP.NPCReloadSound = "Weapon_AR2.Reload"
 
-SWEP.SelectIcon = "l"
+SWEP.CrosshairX		= 0.0
+SWEP.CrosshairY		= 0.25
+
+SWEP.SelectIcon = "g"
 
 SWEP.TracerName = "AR2Tracer"
 
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
+	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
 	local bullet = {}
 	bullet.Num = 1
@@ -264,4 +268,4 @@ end
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_ar2", title = "AR2 (EZ2)" } )
 
 if ( SERVER ) then return end
-killicon.AddAlias( "weapon_ez2_ar2", "weapon_ar2" )
+killicon.AddFont( "weapon_ez2_ar2", "EZ2HUD_Kill_ICON", SWEP.SelectIcon, Color( 255, 80, 0, 255 ) )

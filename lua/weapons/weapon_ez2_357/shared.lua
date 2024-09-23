@@ -1,11 +1,11 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Spawnable				= true
+SWEP.AdminSpawnable			= true
 SWEP.AdminOnly = false
-SWEP.PrintName				= "357 (EZ2)"		-- Weapon name (Shown on HUD)
-SWEP.Slot				= 1			-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos				= 20			-- Position in the slot
+SWEP.PrintName				= "#ez2_swep.357"
+SWEP.Slot				= 1
+SWEP.SlotPos				= 20
 SWEP.ViewModel        = "models/weapons/ez2/c_357.mdl"
 SWEP.WorldModel = "models/weapons/w_357.mdl"
 
@@ -26,7 +26,29 @@ SWEP.HoldType = "revolver"
 SWEP.ReloadSound = ""
 SWEP.NPCReloadSound = "Weapon_ez2_357.Reload"
 
-SWEP.SelectIcon = "e"
+SWEP.CrosshairX		= 0.5
+SWEP.CrosshairY		= 0.0
+
+SWEP.SelectIcon = "d"
+
+function SWEP:ApplyViewKick()
+	local owner = self:GetOwner()
+	if (IsFirstTimePredicted() and CLIENT) or (game.SinglePlayer() and SERVER) then
+		local angs = owner:EyeAngles()
+
+		angs = angs + Angle(util.SharedRandom(self:GetClass(), -1, 1),
+							util.SharedRandom(self:GetClass(), -1, 1),
+							0)
+
+		owner:SetEyeAngles(angs)
+	end
+
+	local punch = Angle()
+	punch.x = -8
+	punch.y = util.SharedRandom(self:GetClass(), -2, 2, 0)
+
+	owner:ViewPunch( punch )
+end
 
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if ( !self:NPCCanPrimaryAttack() ) then return end
@@ -67,14 +89,7 @@ function SWEP:PrimaryAttack()
 		self.Owner:FireBullets( bullet )
 			
 		if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
-			self.Owner:ViewPunch(Angle( -8, math.Rand( -2, 2 ),0))
-					
-			-- 获取玩家准星的位置
-			local punch = Angle(math.Rand(-1,1), math.Rand(-1,1), 0)
-			local eyeang = self.Owner:EyeAngles() + punch
-
-			-- 应用准星移动和视角效果
-			self.Owner:SetEyeAngles(eyeang)
+			self:ApplyViewKick()
 		end
 		
 		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
@@ -113,4 +128,4 @@ end
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_357", title = "357 (EZ2)" } )
 
 if ( SERVER ) then return end
-killicon.AddAlias( "weapon_ez2_357", "weapon_357" )
+killicon.AddFont( "weapon_ez2_357", "EZ2HUD_Kill_ICON", SWEP.SelectIcon, Color( 255, 80, 0, 255 ) )

@@ -1,10 +1,5 @@
 SWEP.Base           = "weapon_base"
-SWEP.Category				= "Entropy : Zero - Uprising" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Manufacturer = "Combine" --Gun Manufactrer (e.g. Hoeckler and Koch )
-SWEP.Author				= "Insane Black Rock Shooter" --Author Tooltip
-SWEP.Contact				= "" --Contact Info Tooltip
-SWEP.Purpose				= "" --Purpose Tooltip
-SWEP.Instructions				= "" --Instructions Tooltip
+SWEP.Category				= "#EZ_Sweps.Category_EZU" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
 SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
 SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
 SWEP.AdminOnly = false

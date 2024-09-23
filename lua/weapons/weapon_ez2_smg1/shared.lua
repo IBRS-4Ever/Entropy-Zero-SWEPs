@@ -1,14 +1,11 @@
-
-CombineAI_SMG = CombineAI_SMG or {}
-CombineAI_SMG["weapon_ez2_smg1"] = true
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "Entropy : Zero 2" --The category.  Please, just choose something generic or something I've already done if you plan on only doing like one swep..
-SWEP.Spawnable				= true --Can you, as a normal user, spawn this?
-SWEP.AdminSpawnable			= true --Can an adminstrator spawn this?  Does not tie into your admin mod necessarily, unless its coded to allow for GMod's default ranks somewhere in its code.  Evolve and ULX should work, but try to use weapon restriction rather than these.
+SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Spawnable				= true
+SWEP.AdminSpawnable			= true
 SWEP.AdminOnly = false
-SWEP.PrintName				= "SMG (EZ2)"		-- Weapon name (Shown on HUD)
-SWEP.Slot				= 2		-- Slot in the weapon selection menu.  Subtract 1, as this starts at 0.
-SWEP.SlotPos				= 20			-- Position in the slot
+SWEP.PrintName				= "#ez2_swep.smg1"
+SWEP.Slot				= 2
+SWEP.SlotPos				= 20
 SWEP.UseHands = false
 SWEP.ViewModel        = "models/weapons/ez2/v_smg1.mdl"
 SWEP.WorldModel = "models/weapons/w_smg1.mdl"
@@ -30,9 +27,13 @@ SWEP.HoldType = "smg"
 SWEP.ReloadSound = ""
 SWEP.NPCReloadSound = "Weapon_smg1.Reload"
 
-SWEP.SelectIcon = "a"
+SWEP.CrosshairX		= 0.5
+SWEP.CrosshairY		= 0.25
+
+SWEP.SelectIcon = "e"
 
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
+	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
 	local bullet = {}
 	bullet.Num = 1
@@ -50,7 +51,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	self:EmitSound( "Weapon_smg1.Single" )
 	self:TakePrimaryAmmo( 1 )
 	
-	if !self.Owner:GetEnemy() then return end
+	if !(IsValid(self.Owner:GetEnemy())) then return end
 	if self.Owner:GetClass() == "npc_combine_s" && CurTime() > self:GetNextSecondaryFire() && self.Owner:GetEnemy():GetPos():Distance(self.Owner:GetPos()) >= 250 && self.Owner:GetEnemy():GetPos():Distance(self.Owner:GetPos()) <= 1300 then
 		if math.random(1, 10) == 1 then
 			if SERVER then
@@ -175,4 +176,4 @@ end
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_smg1", title = "SMG (EZ2)" } )
 
 if ( SERVER ) then return end
-killicon.AddAlias( "weapon_ez2_smg1", "weapon_smg1" )
+killicon.AddFont( "weapon_ez2_smg1", "EZ2HUD_Kill_ICON", SWEP.SelectIcon, Color( 255, 80, 0, 255 ) )
