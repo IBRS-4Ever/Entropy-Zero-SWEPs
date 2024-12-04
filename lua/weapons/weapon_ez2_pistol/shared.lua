@@ -55,13 +55,13 @@ end
 function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
 	if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 		local bullet = {}
 		bullet.Num = 1
 		bullet.Src = self.Owner:GetShootPos()
 		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
 		if !GetConVar( "ez_swep_no_bullet_spread" ):GetBool() then
-			bullet.Spread = Vector( 0.025, 0.025, 0 )
+			bullet.Spread = Vector( 0.01, 0.01, 0 )
 		else
 			bullet.Spread = Vector( 0, 0, 0 )
 		end
@@ -90,7 +90,7 @@ function SWEP:PrimaryAttack()
 		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	self.IdleTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()

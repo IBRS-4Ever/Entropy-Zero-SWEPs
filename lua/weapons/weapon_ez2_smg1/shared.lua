@@ -58,7 +58,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 				if self.Owner:GetGroundSpeedVelocity()==Vector(0,0,0) then
 					timer.Simple(0.5, function()
 						self.Owner:SetSaveValue( "m_fIsElite", true )
-						self.Owner:SetSaveValue("m_hForcedGrenadeTarget", self.Owner:GetEnemy())
+						self.Owner:SetSaveValue( "m_hForcedGrenadeTarget", self.Owner:GetEnemy() )
 					end)
 				end
 			end
@@ -88,7 +88,7 @@ end
 function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
 	if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 		local bullet = {}
 		bullet.Num = 1
 		bullet.Src = self.Owner:GetShootPos()
@@ -122,12 +122,12 @@ function SWEP:PrimaryAttack()
 		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	self.IdleTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()
 	if self.Owner:GetAmmoCount( self.Secondary.Ammo ) > 0 or GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 1 then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 		if SERVER then
 			local grenade = ents.Create( "grenade_ar2" )
 			grenade:SetOwner(self.Owner)
@@ -151,13 +151,13 @@ function SWEP:SecondaryAttack()
 		self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.IdleTimer = CurTime() + self:SequenceDuration()
 	else 
 		self:EmitSound("Weapon_smg1.Empty")
 		self:SetNextPrimaryFire( CurTime() + 0.25 )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.IdleTimer = CurTime() + self:SequenceDuration()
 	end
 end
 

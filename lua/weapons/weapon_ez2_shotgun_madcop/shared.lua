@@ -34,10 +34,10 @@ SWEP.SelectIcon = "h"
 function SWEP:Reload()
 	if self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetInt() == 1 then
 		self:PlayAnim( self.FirstDrawAnimation )
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	self.IdleTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:PrimaryAttack()
@@ -46,7 +46,7 @@ function SWEP:PrimaryAttack()
     end
 	if ( !self:CanPrimaryAttack() ) then return end
 		if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 			local bullet = {}
 				bullet.Num = GetConVar( "ez2_swep_shotgun_madcop_num" ):GetInt()
 				bullet.Src = self.Owner:GetShootPos()
@@ -75,7 +75,7 @@ function SWEP:PrimaryAttack()
 			self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 		end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	self.IdleTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()

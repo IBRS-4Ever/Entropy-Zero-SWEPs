@@ -25,6 +25,20 @@ SWEP.CrosshairY		= 0.0
 
 SWEP.TracerName = "Tracer"
 
+function SWEP:SetupDataTables()
+	self:NetworkVar( "Float",	"NextIdleTime" )
+	self:NetworkVar( "Float",	"FireDuration" ) -- time spent holding primary trigger
+	self:NetworkVar( "Int",		"ShotsFired" ) -- consecutive shot counter
+	self:NetworkVar( "Bool",	"IsReloading")
+	self:NetworkVar( "Float",	"ReloadTime" )
+	self:NetworkVar( "Bool",	"FirstTimePickup")
+
+	if SERVER then
+		self:SetShotsFired(0)
+		self:SetIsReloading(false)
+	end
+end
+
 hook.Add( "EntityEmitSound", "EZ_SWEPS_DO_ALTIFRE",function(data)--we use sound manipulation to make people think soldiers can actually use smg grenades
 	local ar2_ball = { [Sound("Weapon_CombineGuard.Special1")] = true }
 	local AltFire = ar2_ball[data.OriginalSoundName]
@@ -42,7 +56,12 @@ function SWEP:Equip()
 	end
 end
 
+function SWEP:NPCShoot_Primary( shootPos, shootDir )
+
+end
+
 function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
+	if !GetConVar("ez_swep_bullet_penetrate"):GetBool() then return end
 	if IsValid(attacker) then
 		if CLIENT then return end
 		local mat = tr.MatType
@@ -60,7 +79,7 @@ function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
 		elseif (mat == MAT_WOOD or mat == MAT_PLASTIC or mat == MAT_GLASS) then
 			fDamageMulti = 0.8
 		end
-		local bullet = {Num=1, Src=trace.HitPos, Dir=tr.Normal, Spread=vector_origin, Tracer=1, TracerName=self.TracerName, Force=5, Damage=(dmginfo:GetDamage()*fDamageMulti), HullSize=2}
+		local bullet = {Num=1, Src=trace.HitPos, Dir=tr.Normal, Spread=vector_origin, Tracer=1, TracerName=self.TracerName, Force=5, Damage=(dmginfo:GetDamage()*fDamageMulti), HullSize=2, IgnoreEntity = tr.Entity}
 		
 		timer.Simple(0, function()
 		if not IsFirstTimePredicted() then return end
@@ -74,13 +93,13 @@ function SWEP:Reload()
 	if !self.Owner:IsNPC() then
 		if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetBool() then
 			self:PlayAnim( self.FirstDrawAnimation )
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 		end
 		if self.Weapon:DefaultReload(ACT_VM_RELOAD) then
 			self:EmitSound( self.ReloadSound )
 		end
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.IdleTimer = CurTime() + self:SequenceDuration()
 	
 	else
 		self.Owner:SetSchedule(SCHED_RELOAD)
@@ -115,17 +134,17 @@ function SWEP:Deploy()
 	if !self.Owner:IsNPC() then
 		if self.FirstDraw != 1 and GetConVar( "ez_swep_firstdraw_animation" ):GetInt() == 1 then
 			self:PlayAnim( self.FirstDrawAnimation )
-			self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
-			self:SetNextSecondaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
+			self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
+			self:SetNextSecondaryFire( CurTime() + self:SequenceDuration() )
 			self.FirstDraw = 1
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration() + 3
+			self.IdleTimer = CurTime() + self:SequenceDuration()
+			self.NextFirstDrawTimer = CurTime() + self:SequenceDuration() + 3
 		else
 			self:SendWeaponAnim( ACT_VM_DRAW )
 			self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.IdleTimer = CurTime() + self:SequenceDuration()
 		end
 	end
 	return true
@@ -150,7 +169,7 @@ function SWEP:CanPrimaryAttack()
 			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
 			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay ) -- 等待动画播放完毕
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.IdleTimer = CurTime() + self:SequenceDuration()
 			self:Reload()
 			return false
 		end
@@ -159,6 +178,7 @@ function SWEP:CanPrimaryAttack()
 end
 
 function SWEP:Holster( wep )
+	self:SetIsReloading( false )
 	return true
 end
 
@@ -180,12 +200,12 @@ function SWEP:Think()
 						self.IdleToLower = 1
 						self.IdleToLowerTimer = CurTime() + 0.5
 						self.IdleLower = 1
-						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+						self.IdleLowerTimer = CurTime() + self:SequenceDuration()
 					end
 					
 					if self.IdleLower == 1 and self.IdleToLower == 1 and self.IdleLowerTimer < CurTime() then
 						self:SendWeaponAnim(ACT_VM_IDLE_LOWERED)
-						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+						self.IdleLowerTimer = CurTime() + self:SequenceDuration()
 						self.LowerToIdle = 0
 						self.LowerToIdleTimer = CurTime() + 1
 					end
@@ -197,9 +217,9 @@ function SWEP:Think()
 						self.IdleLower = 0
 						self.IdleToLower = 0
 						self.LowerToIdle = 1
-						self.IdleToLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+						self.IdleToLowerTimer = CurTime() + self:SequenceDuration()
 						self.Idle = 0
-						self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+						self.IdleTimer = CurTime() + self:SequenceDuration()
 					end
 				end
 					

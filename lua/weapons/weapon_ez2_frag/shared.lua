@@ -35,7 +35,7 @@ SWEP.Ready = 0
 
 function SWEP:PrimaryAttack()
 	self:SendWeaponAnim( ACT_VM_PULLBACK_HIGH )
-	timer.Create( "GrenadeTimer", self.Owner:GetViewModel():SequenceDuration(), 1, function()
+	timer.Create( "GrenadeTimer", self:SequenceDuration(), 1, function()
 		local Pos = self.Owner:GetShootPos() + self.Owner:EyeAngles():Forward() * 32
 		local Ang = self.Owner:EyeAngles() + Angle(90,0,0)
 		local Vel = self.Owner:GetVelocity() + self.Owner:GetAimVector() * 1200
@@ -44,17 +44,17 @@ function SWEP:PrimaryAttack()
 		self.Owner:SetAnimation( PLAYER_ATTACK1 )
 		self:SpawnGrenade( Pos, Ang, Vel, AngVel )
 		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-		timer.Create( "GrenadeTimerDeploy", self.Owner:GetViewModel():SequenceDuration(), 1, function()
+		timer.Create( "GrenadeTimerDeploy", self:SequenceDuration(), 1, function()
 			self:SendWeaponAnim( ACT_VM_DRAW )
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.IdleTimer = CurTime() + self:SequenceDuration()
 		end)
 	end)
 end
 
 function SWEP:SecondaryAttack()
 	self:SendWeaponAnim( ACT_VM_PULLBACK_LOW )
-	timer.Create( "GrenadeTimer", self.Owner:GetViewModel():SequenceDuration(), 1, function()
+	timer.Create( "GrenadeTimer", self:SequenceDuration(), 1, function()
 		local Pos = self.Owner:GetShootPos() + self.Owner:EyeAngles():Forward() * 32
 		local Ang = Angle(0, self.Owner:GetLocalAngles().y, -90 )
 		local Vel = self.Owner:GetVelocity() + self.Owner:GetAimVector() * 700
@@ -63,10 +63,10 @@ function SWEP:SecondaryAttack()
 		self.Owner:SetAnimation( PLAYER_ATTACK1 )
 		self:SpawnGrenade( Pos, Ang, Vel, AngVel )
 		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-		timer.Create( "GrenadeTimerDeploy", self.Owner:GetViewModel():SequenceDuration(), 1, function()
+		timer.Create( "GrenadeTimerDeploy", self:SequenceDuration(), 1, function()
 			self:SendWeaponAnim( ACT_VM_DRAW )
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.IdleTimer = CurTime() + self:SequenceDuration()
 		end)
 	end)
 end

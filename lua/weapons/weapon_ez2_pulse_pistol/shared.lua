@@ -50,7 +50,7 @@ function SWEP:PrimaryAttack()
 			if ( IsFirstTimePredicted() ) then
 				self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 				local bullet = {}
-				bullet.Num = 1
+				bullet.Num = 2
 				bullet.Src = self.Owner:GetShootPos()
 				bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
 					if GetConVar( "ez_swep_no_bullet_spread" ):GetInt() == 0 then
@@ -91,12 +91,12 @@ function SWEP:SecondaryAttack()
     if self:Clip1() > 10 then
 	self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		local bullet = {}
-		bullet.Num = 1
+		bullet.Num = 20
 		bullet.Src = self.Owner:GetShootPos()
 		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-		bullet.Spread = Vector( 0.01, 0.01, 0 )
+		bullet.Spread = Vector( 0.03, 0.03, 0 )
 		bullet.Force = 5
-		bullet.Damage = (GetConVar( "ez2_swep_pulse_pistol_dmg" ):GetInt() + 1*(self:Clip1() - 10))
+		bullet.Damage = GetConVar( "ez2_swep_pulse_pistol_dmg" ):GetInt()
 		bullet.TracerName = self.TracerName
 		self.Owner:FireBullets( bullet )
 		self.Owner:ViewPunch(Angle( -2, math.Rand( -2, 2 ),0))

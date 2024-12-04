@@ -110,7 +110,7 @@ end
 function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
 	if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 		local bullet = {}
 		bullet.Num = 1
 		bullet.Src = self.Owner:GetShootPos()
@@ -148,13 +148,13 @@ function SWEP:PrimaryAttack()
 		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	self.IdleTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()
 	if ( IsFirstTimePredicted() ) then
 		if self.Owner:GetAmmoCount( self.Secondary.Ammo ) > 0 or GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
 			self:EmitSound("Weapon_CombineGuard.Special1")
 			self:SendWeaponAnim( ACT_VM_FIDGET )
 				if SERVER then
@@ -192,7 +192,7 @@ function SWEP:SecondaryAttack()
 							self.Owner:SetAnimation( PLAYER_ATTACK1 )
 							self:EmitSound("Weapon_EZ2_AR2_Proto.AltFire_Single")
 							self.Idle = 0
-							self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+							self.IdleTimer = CurTime() + self:SequenceDuration()
 						end
 						timer.Remove( "AR2AltFire" )
 					end)
@@ -206,7 +206,7 @@ function SWEP:SecondaryAttack()
 		end
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	self.IdleTimer = CurTime() + self:SequenceDuration()
 end
 
 function SWEP:DoImpactEffect( tr, nDamageType )
