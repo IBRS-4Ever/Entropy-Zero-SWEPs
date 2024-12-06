@@ -55,7 +55,7 @@ end
 function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
 	if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		local bullet = {}
 		bullet.Num = 1
 		bullet.Src = self.Owner:GetShootPos()
@@ -90,7 +90,7 @@ function SWEP:PrimaryAttack()
 		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self:SequenceDuration()
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()

@@ -88,7 +88,7 @@ end
 function SWEP:PrimaryAttack()
 	if ( !self:CanPrimaryAttack() ) then return end
 	if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		local bullet = {}
 		bullet.Num = 1
 		bullet.Src = self.Owner:GetShootPos()
@@ -122,12 +122,12 @@ function SWEP:PrimaryAttack()
 		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self:SequenceDuration()
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:SecondaryAttack()
 	if self.Owner:GetAmmoCount( self.Secondary.Ammo ) > 0 or GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 1 then
-		self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
+		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		if SERVER then
 			local grenade = ents.Create( "grenade_ar2" )
 			grenade:SetOwner(self.Owner)
@@ -151,13 +151,13 @@ function SWEP:SecondaryAttack()
 		self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self:SequenceDuration()
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	else 
 		self:EmitSound("Weapon_smg1.Empty")
 		self:SetNextPrimaryFire( CurTime() + 0.25 )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self:SequenceDuration()
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	end
 end
 

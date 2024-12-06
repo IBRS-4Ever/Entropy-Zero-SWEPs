@@ -45,7 +45,7 @@ function SWEP:Reload()
 		self:EmitSound( "Weapon_MP5K.Reload" )
 	end
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self:SequenceDuration()
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:Initialize()
@@ -62,9 +62,9 @@ end
 
 function SWEP:Deploy()
 	self:SendWeaponAnim( ACT_VM_DRAW )
-	self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
+	self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self:SequenceDuration()
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:PrimaryAttack()
@@ -114,7 +114,7 @@ function SWEP:SecondaryAttack()
 	    self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	end
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self:SequenceDuration()
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:Think()

@@ -40,14 +40,14 @@ SWEP.Secondary.Ammo = "none"
 function SWEP:Reload()
 	self.Weapon:DefaultReload(ACT_VM_RELOAD) 
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self:SequenceDuration()
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 end
 
 function SWEP:Deploy()
 	self:SendWeaponAnim( ACT_VM_DRAW )
-	self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
+	self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
 	self.Idle = 0
-	self.IdleTimer = CurTime() + self:SequenceDuration()
+	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	return true 
 end
 
@@ -90,7 +90,7 @@ function SWEP:PrimaryAttack()
 		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 		self:Reload()
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self:SequenceDuration()
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	end
 end
 

@@ -1,5 +1,9 @@
+AddCSLuaFile()
+
+list.Set("ContentCategoryIcons", "#EZ_Sweps.Category_EZ2", "icon16/ez2.png")
+
 SWEP.Base           = "weapon_base"
-SWEP.Category				= "Entropy : Zero"
+SWEP.Category				= "#EZ_Sweps.Category_EZ2"
 SWEP.DrawAmmo				= true
 SWEP.UseHands = true
 
@@ -93,13 +97,14 @@ function SWEP:Reload()
 	if !self.Owner:IsNPC() then
 		if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetBool() then
 			self:PlayAnim( self.FirstDrawAnimation )
-			self.NextFirstDrawTimer = CurTime() + self:SequenceDuration()
+			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		end
 		if self.Weapon:DefaultReload(ACT_VM_RELOAD) then
 			self:EmitSound( self.ReloadSound )
 		end
 		self.Idle = 0
-		self.IdleTimer = CurTime() + self:SequenceDuration()
+		--self.SetNextIdleTime( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
+		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	
 	else
 		self.Owner:SetSchedule(SCHED_RELOAD)
@@ -128,23 +133,21 @@ function SWEP:Initialize()
 	end
 end
 
-
-
 function SWEP:Deploy()
 	if !self.Owner:IsNPC() then
 		if self.FirstDraw != 1 and GetConVar( "ez_swep_firstdraw_animation" ):GetInt() == 1 then
 			self:PlayAnim( self.FirstDrawAnimation )
-			self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
-			self:SetNextSecondaryFire( CurTime() + self:SequenceDuration() )
+			self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
+			self:SetNextSecondaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
 			self.FirstDraw = 1
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self:SequenceDuration()
-			self.NextFirstDrawTimer = CurTime() + self:SequenceDuration() + 3
+			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration() + 3
 		else
 			self:SendWeaponAnim( ACT_VM_DRAW )
-			self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
+			self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self:SequenceDuration()
+			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 		end
 	end
 	return true
@@ -167,9 +170,9 @@ function SWEP:CanPrimaryAttack()
 			self:EmitSound("Weapon_Pistol.Empty")
 			self:SendWeaponAnim( ACT_VM_DRYFIRE )
 			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay ) -- 等待动画播放完毕
+			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay ) 							// 等待动画播放完毕
 			self.Idle = 0
-			self.IdleTimer = CurTime() + self:SequenceDuration()
+			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 			self:Reload()
 			return false
 		end
@@ -181,8 +184,22 @@ function SWEP:Holster( wep )
 	self:SetIsReloading( false )
 	return true
 end
-
+--[[
+function SWEP:CanReload()
+	if self:GetIsReloading() then return false end												// 是否已在换弹
+	if self:Clip1() >= self:GetMaxClip1() then return false end									// 武器是否是满的，或者是否超出弹夹上限
+	if self:GetNextPrimaryFire() > CurTime() then return false end								// 武器是否在开火冷却中
+	if self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoType()) <= 0 then return false end		// 玩家是否拥有弹药
+	return true																					// 可以换弹
+end
+]]
 function SWEP:Think()
+	--[[
+	if not self:GetIsReloading() and self:Clip1() == 0 and self:CanReload() then
+		self:Reload()
+	end
+	]]
+
 	if !self.Owner:IsNPC() then
 		self.ViewModelFOV = GetConVar( "ez_swep_fov" ):GetInt()
 		if self.Idle == 0 and self.IdleTimer < CurTime() then
@@ -200,12 +217,12 @@ function SWEP:Think()
 						self.IdleToLower = 1
 						self.IdleToLowerTimer = CurTime() + 0.5
 						self.IdleLower = 1
-						self.IdleLowerTimer = CurTime() + self:SequenceDuration()
+						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 					end
 					
 					if self.IdleLower == 1 and self.IdleToLower == 1 and self.IdleLowerTimer < CurTime() then
 						self:SendWeaponAnim(ACT_VM_IDLE_LOWERED)
-						self.IdleLowerTimer = CurTime() + self:SequenceDuration()
+						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 						self.LowerToIdle = 0
 						self.LowerToIdleTimer = CurTime() + 1
 					end
@@ -217,9 +234,9 @@ function SWEP:Think()
 						self.IdleLower = 0
 						self.IdleToLower = 0
 						self.LowerToIdle = 1
-						self.IdleToLowerTimer = CurTime() + self:SequenceDuration()
+						self.IdleToLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 						self.Idle = 0
-						self.IdleTimer = CurTime() + self:SequenceDuration()
+						self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 					end
 				end
 					
@@ -262,6 +279,6 @@ if CLIENT then
 	end
 
 	function SWEP:DrawWeaponSelection(x,y,wide,tall)
-		draw.SimpleText( self.SelectIcon, 'EZ2HUD', x + wide / 2, y + tall * 0.1 + 30, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER )
+		draw.SimpleText( self.SelectIcon, 'EZ2HUD', x + wide / 2, y + tall * 0.1 + 30, color_white, TEXT_ALIGN_CENTER )
 	end
 end

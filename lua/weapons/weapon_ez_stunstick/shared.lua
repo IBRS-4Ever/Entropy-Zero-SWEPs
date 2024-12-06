@@ -51,7 +51,7 @@ SWEP.Secondary.Force = 2000
 
 function SWEP:Deploy()
 	self:SendWeaponAnim( ACT_VM_DRAW )
-	self:SetNextPrimaryFire( CurTime() + self:SequenceDuration() )
+	self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
 	self.Idle = 0
 	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	return true
