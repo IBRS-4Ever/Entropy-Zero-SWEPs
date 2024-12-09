@@ -34,3 +34,5 @@ CreateConVar( "ez_swep_firstdraw_by_reload", 0 , FCVAR_ARCHIVE + FCVAR_SERVER_CA
 CreateConVar( "ez_swep_fov", 54 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Sets Entropy Zero SWEPs' FOV.", 0, 180)
 CreateConVar( "ez_swep_replacement", 0 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Replace NPC's weapons with Entropy Zero SWEP's.", 0, 1)
 CreateConVar( "ez_swep_bullet_penetrate", 0 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Bullet Penetrate.", 0, 1)
+
+CreateClientConVar( "ez_swep_icon_use_font", 1 , 0, 1 )

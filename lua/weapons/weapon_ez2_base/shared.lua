@@ -1,33 +1,44 @@
 AddCSLuaFile()
-
 list.Set("ContentCategoryIcons", "#EZ_Sweps.Category_EZ2", "icon16/ez2.png")
 
+local BaseClass = baseclass.Get( "weapon_base" )
 SWEP.Base           = "weapon_base"
+
 SWEP.Category				= "#EZ_Sweps.Category_EZ2"
-SWEP.DrawAmmo				= true
 SWEP.UseHands = true
 
 SWEP.BounceWeaponIcon	= false
 SWEP.DrawWeaponInfoBox	= false
 
-SWEP.Idle = 0
-SWEP.IdleTimer = CurTime()
-SWEP.FirstDraw = 0
-SWEP.FirstDrawAnimation = "firstdraw"
-SWEP.FirstDrawing = 0
-SWEP.NextFirstDrawTimer = CurTime()
+SWEP.Primary.Ammo			= ""
+SWEP.Primary.ClipSize		= -1
+SWEP.Primary.DefaultClip	= -1
+SWEP.Primary.Automatic		= true
 
-SWEP.IdleToLower = 0
-SWEP.IdleToLowerTimer = CurTime() 
-SWEP.IdleLower = 0
-SWEP.IdleLowerTimer = CurTime()
-SWEP.LowerToIdle = 0
-SWEP.LowerToIdleTimer = CurTime()
+SWEP.Secondary.Ammo			= ""
+SWEP.Secondary.ClipSize		= -1
+SWEP.Secondary.DefaultClip	= -1
+SWEP.Secondary.Automatic	= true
 
 SWEP.CrosshairX		= 0.0
 SWEP.CrosshairY		= 0.0
+SWEP.HoldType		= "normal"
+
+SWEP.ReadyTimings	= {}
+SWEP.ReloadTime		= -1
+
+SWEP.FirstDrawAnimation = "firstdraw"
 
 SWEP.TracerName = "Tracer"
+SWEP.WepSelectIcon = false
+
+function SWEP:Initialize()
+	self:SetHoldType( self.HoldType )
+end
+
+function SWEP:OnReloaded()
+	self:Initialize()
+end
 
 function SWEP:SetupDataTables()
 	self:NetworkVar( "Float",	"NextIdleTime" )
@@ -43,6 +54,257 @@ function SWEP:SetupDataTables()
 	end
 end
 
+function SWEP:Equip()
+	if self.Owner:GetClass() == "npc_citizen" then
+		self.Owner:Fire( "DisableWeaponPickup" )
+	end
+	if self.Owner:IsPlayer() then
+		self:SetFirstTimePickup(true)
+	end
+end
+
+function SWEP:PlayActivity(act, blocker)
+	local SequenceIndex = self.Owner:GetViewModel():LookupSequence(act)
+	if SequenceIndex != -1 then
+		self.Owner:GetViewModel():ResetSequence(SequenceIndex)
+		self.Owner:GetViewModel():ResetSequenceInfo()
+		self.Owner:GetViewModel():SendViewModelMatchingSequence(SequenceIndex)
+	else
+		self:SendWeaponAnim(act)
+	end
+
+	local delay = self.Owner:GetViewModel():SequenceDuration()
+	self:SetNextIdleTime(CurTime() + delay)
+	if blocker or false then
+		if self.ReadyTimings[act] and self.ReadyTimings[act] ~= -1 then
+			delay = self.ReadyTimings[act]
+		end
+		self:SetNextPrimaryFire(CurTime() + delay)
+		self:SetNextSecondaryFire(CurTime() + delay)
+	end
+end
+
+function SWEP:Holster( wep )
+	self:SetIsReloading( false )
+	return true
+end
+
+function SWEP:CanReload()
+	if self:GetIsReloading() then return false end
+	if self:Clip1() >= self:GetMaxClip1() then return false end
+	if self:GetNextPrimaryFire() > CurTime() then return false end
+	if self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoType()) <= 0 then return false end
+
+	return true
+end
+
+function SWEP:Reload()
+	if self.Owner:IsNPC() then
+		self.Owner:SetSchedule(SCHED_RELOAD)
+		self:EmitSound( self.NPCReloadSound ) 
+	else
+		if self:CanReload() then
+			self:BeginReload()
+		else
+			if !GetConVar("ez_swep_firstdraw_by_reload"):GetBool() then return end
+			if not self:GetIsReloading() and self:GetActivity() == ACT_VM_IDLE then
+				if timer.TimeLeft( "EZ2SWEP_FirstDrawTimer" ) == nil then
+					self:PlayActivity(self.FirstDrawAnimation)
+					timer.Create( "EZ2SWEP_FirstDrawTimer", self.Owner:GetViewModel():SequenceDuration(), 1, function() end )
+				end
+			end
+		end
+	end
+end
+
+function SWEP:BeginReload()
+	self:PlayActivity(ACT_VM_RELOAD, true)
+	self:EmitSound(self.ReloadSound)
+	self:GetOwner():SetAnimation( PLAYER_RELOAD )
+	self:SetIsReloading(true)
+
+	local delay = self:SequenceDuration()
+	if self.ReloadTime != -1 then delay = self.ReloadTime end
+	self:SetReloadTime(CurTime() + delay)
+end
+
+function SWEP:FinishReload()
+	local num = self:GetMaxClip1() - self:Clip1()
+	num = math.min(num, self:Ammo1())
+
+	self:SetClip1( self:Clip1() + num )
+	self:GetOwner():RemoveAmmo(num, self:GetPrimaryAmmoType())
+	self:SetIsReloading(false)
+end
+
+function SWEP:TakePrimaryAmmo(amount)
+	if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then return true end
+	if self:Clip1() < 0 then
+		if ( self:Ammo1() < amount ) then return false end
+		self:GetOwner():RemoveAmmo( amount, self:GetPrimaryAmmoType() )
+		return true
+	end
+	if self:Clip1() < amount then return false end
+	self:SetClip1( self:Clip1() - amount )
+	return true
+end
+
+function SWEP:TakeSecondaryAmmo(amount)
+	if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then return true end
+	if self:Clip2() < 0 then
+		if ( self:Ammo2() < amount ) then return false end
+		self:GetOwner():RemoveAmmo( amount, self:GetSecondaryAmmoType() )
+		return true
+	end
+	if self:Clip2() < amount then return false end
+	self:SetClip2( self:Clip2() - amount )
+	return true
+end
+
+function SWEP:PrimaryAttack() end
+function SWEP:SecondaryAttack() end
+
+function SWEP:SpreadedVector(vec, spread)
+	local owner = self:GetOwner()
+	local x, y
+	local i = 0
+	while i < 10 do -- give up after 10 iterations just incase we somehow get stuck.......
+		x, y = util.SharedRandom("x", -1.0, 1.0, i), util.SharedRandom("y", -1.0, 1.0, i)
+		if x*x + y*y < 1 then
+			break
+		end
+		i = i + 1
+	end
+	local aimdir, right, up = owner:GetAimVector(), owner:GetRight(), owner:GetUp()
+
+	aimdir = aimdir + x * right * spread + y * up * spread
+	return aimdir
+end
+
+function SWEP:ShootBullet(spread, damage, count)
+	local owner = self:GetOwner()
+
+	local vec = owner:GetAimVector()
+	local src = owner:GetShootPos()
+	local num = count or 1
+	if GetConVar("ez_swep_no_bullet_spread"):GetBool() then spread = Vector(0,0,0) end
+	-- use built-in spread here because the shotgun feels even worse when calling FireBullets multiple times instead of using Num
+	if num > 1 then
+		owner:FireBullets({
+							Src = src,
+							Dir = vec,
+							Damage = damage,
+							Num = num,
+							Spread = spread * (math.pi / 4), -- compensate for square-shaped spread
+							AmmoType = self.Primary.Ammo,
+							TracerName = self.TracerName or nil,
+							Callback = function(a,b,c) self:BulletPenetrate(a,b,c) end,
+						})
+	else
+		local spreaded = self:SpreadedVector(vec, spread, i)
+		owner:FireBullets({
+							Src = src,
+							Dir = spreaded,
+							Damage = damage,
+							AmmoType = self.Primary.Ammo,
+							TracerName = self.TracerName or nil,
+							Callback = function(a,b,c) self:BulletPenetrate(a,b,c) end,
+						})
+	end
+end
+
+function SWEP:Think()
+	if game.SinglePlayer() and CLIENT then return end
+	if self.Owner:IsNPC() then return end
+
+	local owner = self:GetOwner()
+	local cmd = owner:GetCurrentCommand()
+
+	if not self:GetIsReloading() and self:Clip1() == 0 and self:CanReload() then
+		self:Reload()
+	end
+
+	if cmd:KeyDown(IN_ATTACK) and not self:GetIsReloading() then
+		self:SetFireDuration(self:GetFireDuration() + FrameTime())
+	elseif CurTime() > self:GetNextPrimaryFire() then
+		self:SetFireDuration(0)
+		self:SetShotsFired(0)
+	end
+
+	if self:GetIsReloading() and self:GetReloadTime() <= CurTime() then
+		self:FinishReload()
+	end
+
+	self:Idle()
+end
+
+function SWEP:Idle()
+	if self:GetNextIdleTime() <= CurTime() then
+		self:PlayActivity(ACT_VM_IDLE)
+	end
+end
+
+function SWEP:GetPrimaryAttackActivity()
+	if self:GetShotsFired() < 2 then
+		return ACT_VM_PRIMARYATTACK end
+	if self:GetShotsFired() < 3 then
+		return ACT_VM_RECOIL1 end
+	if self:GetShotsFired() < 4 then
+		return ACT_VM_RECOIL2 end
+
+	return ACT_VM_RECOIL3
+end
+
+function SWEP:GetBulletSpread()
+	return self.BulletSpread
+end
+
+function SWEP:GetFireRate()
+	return self.FireRate
+end
+
+function SWEP:ApplyViewKick(angle) 
+	if GetConVar( "ez_swep_no_recoil" ):GetBool() then return end
+	self.Owner:ViewPunch( angle or Angle( 0, 0, 0 ) )
+end
+
+function SWEP:DoMachineGunKick(maxVerticalKickAngle, fireDurationTime, slideLimitTime)
+	local owner = self:GetOwner()
+	local vecScratch = Angle()
+
+	local duration
+	if ( fireDurationTime > slideLimitTime ) then
+		duration = slideLimitTime
+	else
+		duration = fireDurationTime
+	end
+
+	local kickPerc = duration / slideLimitTime
+
+	owner:ViewPunchReset(10)
+
+	vecScratch.x = -( 0.2 + ( maxVerticalKickAngle * kickPerc ) )
+	vecScratch.y = -( 0.2 + ( maxVerticalKickAngle * kickPerc ) ) / 3
+	vecScratch.z =    0.1 + ( maxVerticalKickAngle * kickPerc ) / 8
+
+	if util.SharedRandom("DoMachineGunKickX", -1, 1) >= 0 then
+		vecScratch.y = -vecScratch.y
+	end
+	if util.SharedRandom("DoMachineGunKickY", -1, 1) >= 0 then
+		vecScratch.x = -vecScratch.x
+	end
+
+	local punchangle = vecScratch + owner:GetViewPunchAngles()
+
+	vecScratch.x = math.Clamp(vecScratch.x, punchangle.x - 24, punchangle.x + 24 )
+	vecScratch.y = math.Clamp(vecScratch.y, punchangle.y - 3, punchangle.y + 3 )
+	vecScratch.z = math.Clamp(vecScratch.z, punchangle.z - 1, punchangle.z + 1 )
+
+	vecScratch = punchangle - owner:GetViewPunchAngles()
+
+	owner:ViewPunch(vecScratch * 0.5)
+end
+
 hook.Add( "EntityEmitSound", "EZ_SWEPS_DO_ALTIFRE",function(data)--we use sound manipulation to make people think soldiers can actually use smg grenades
 	local ar2_ball = { [Sound("Weapon_CombineGuard.Special1")] = true }
 	local AltFire = ar2_ball[data.OriginalSoundName]
@@ -54,15 +316,7 @@ hook.Add( "EntityEmitSound", "EZ_SWEPS_DO_ALTIFRE",function(data)--we use sound 
 	end
 end)
 
-function SWEP:Equip()
-	if self.Owner:GetClass() == "npc_citizen" then
-		self.Weapon.Owner:Fire( "DisableWeaponPickup" )
-	end
-end
-
-function SWEP:NPCShoot_Primary( shootPos, shootDir )
-
-end
+function SWEP:NPCShoot_Primary() end
 
 function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
 	if !GetConVar("ez_swep_bullet_penetrate"):GetBool() then return end
@@ -93,62 +347,57 @@ function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
 	end
 end
 
-function SWEP:Reload()
-	if !self.Owner:IsNPC() then
-		if self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetBool() then
-			self:PlayAnim( self.FirstDrawAnimation )
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-		end
-		if self.Weapon:DefaultReload(ACT_VM_RELOAD) then
-			self:EmitSound( self.ReloadSound )
-		end
-		self.Idle = 0
-		--self.SetNextIdleTime( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-	
-	else
-		self.Owner:SetSchedule(SCHED_RELOAD)
-		self:EmitSound( self.NPCReloadSound ) 
-	end
+function SWEP:ApplyViewPunch(angle)
+	if !self.Owner:IsPlayer() then return end
+	if GetConVar( "ez_swep_no_recoil" ):GetBool() then return end
+	self.Owner:ViewPunch( angle or Angle( 0, 0, 0 ) )
 end
 
-function SWEP:PlayAnim(a,c,t)
-	local vm=self.Owner:GetViewModel()
-	if a then
-		local n=vm:LookupSequence(a)
-		vm:ResetSequence(n)
-		vm:ResetSequenceInfo()
-		vm:SendViewModelMatchingSequence(n)
-	end
-	if !c then c=1 end
-		vm:SetPlaybackRate(c)
-end
+function SWEP:LaunchEnergyBall(speed,radius,lifetime,angle)
+	if SERVER then
+		if IsValid(self) and IsValid(self.Owner) then
+			local ball = ents.Create( "prop_combine_ball" )
+			ball:SetAngles( self.Owner:GetAngles() )
+			ball:SetPos( self.Owner:GetShootPos() )
+			ball:Spawn()
+			ball:Activate()
+			ball:SetOwner(self.Owner)
+			ball:Fire("explode","", lifetime or 4)
+			ball:SetSaveValue( "m_flRadius", radius or 10 )
+			ball:SetSaveValue( "m_bLaunched", true )
+			ball:SetSaveValue( "m_bEmit", true )
+			ball:SetSaveValue( "m_bForward", true )
+			ball:SetSaveValue( "m_nLastThinkTick", -1 )
+			ball:SetSaveValue( "m_nMaxBounces", 9999 )
+			ball:SetSaveValue( "m_nState", 3 )
+			local phys = ball:GetPhysicsObject()
+			phys:SetVelocity( ( self.Owner:GetAimVector():Angle() + (angle or Angle( 0,0,0 )) ):Forward() * ( speed or 1500 )  )
+			if self.Owner:IsPlayer() then phys:AddGameFlag( bit.bor( FVPHYSICS_DMG_DISSOLVE, FVPHYSICS_HEAVY_OBJECT ) ) end // Player
+			if self.Owner:IsNPC() then phys:AddGameFlag( FVPHYSICS_NO_NPC_IMPACT_DMG ) end									// NPC
+			phys:SetMass( 150 )
+			phys:SetInertia( Vector( 500, 500, 500 ) )
+			self:EmitSound("Weapon_EZ2_AR2_Proto.AltFire_Single")
 
-function SWEP:Initialize()
-	self:SetHoldType( self.HoldType )
-	
-	if !self.Owner:IsNPC() then
-		self.Idle = 0
-		self.IdleTimer = CurTime() + 4
+			if self.Owner:IsPlayer() then
+				self:PlayActivity( ACT_VM_SECONDARYATTACK, true )
+				self.Owner:SetAnimation( PLAYER_ATTACK1 )
+			end
+		end
 	end
 end
 
 function SWEP:Deploy()
-	if !self.Owner:IsNPC() then
-		if self.FirstDraw != 1 and GetConVar( "ez_swep_firstdraw_animation" ):GetInt() == 1 then
-			self:PlayAnim( self.FirstDrawAnimation )
-			self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
-			self:SetNextSecondaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
-			self.FirstDraw = 1
-			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration() + 3
-		else
-			self:SendWeaponAnim( ACT_VM_DRAW )
-			self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() )
-			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-		end
+	if self.Owner:IsNPC() then return end
+	self:PlayActivity(ACT_VM_DRAW, true, 0.8)
+
+	if self.SetFireDuration and self.SetShotsFired then
+		self:SetFireDuration(0)
+		self:SetShotsFired(0)
+	end
+
+	if self:GetFirstTimePickup() and SERVER and GetConVar("ez_swep_firstdraw_animation"):GetBool() then
+		self:PlayActivity(self.FirstDrawAnimation)
+		self:SetFirstTimePickup(false)
 	end
 	return true
 end
@@ -161,96 +410,6 @@ function SWEP:NPCCanPrimaryAttack()
 			return false
 		end
 		return true
-	end
-end
-
-function SWEP:CanPrimaryAttack()
-	if !self.Owner:IsNPC() then
-		if self:Clip1() < 1 then
-			self:EmitSound("Weapon_Pistol.Empty")
-			self:SendWeaponAnim( ACT_VM_DRYFIRE )
-			self:GetOwner():SetAnimation(PLAYER_ATTACK1)
-			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay ) 							// 等待动画播放完毕
-			self.Idle = 0
-			self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			self:Reload()
-			return false
-		end
-		return true
-	end
-end
-
-function SWEP:Holster( wep )
-	self:SetIsReloading( false )
-	return true
-end
---[[
-function SWEP:CanReload()
-	if self:GetIsReloading() then return false end												// 是否已在换弹
-	if self:Clip1() >= self:GetMaxClip1() then return false end									// 武器是否是满的，或者是否超出弹夹上限
-	if self:GetNextPrimaryFire() > CurTime() then return false end								// 武器是否在开火冷却中
-	if self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoType()) <= 0 then return false end		// 玩家是否拥有弹药
-	return true																					// 可以换弹
-end
-]]
-function SWEP:Think()
-	--[[
-	if not self:GetIsReloading() and self:Clip1() == 0 and self:CanReload() then
-		self:Reload()
-	end
-	]]
-
-	if !self.Owner:IsNPC() then
-		self.ViewModelFOV = GetConVar( "ez_swep_fov" ):GetInt()
-		if self.Idle == 0 and self.IdleTimer < CurTime() then
-			if SERVER then
-				self.Weapon:SendWeaponAnim( ACT_VM_IDLE )
-			end
-			self.Idle = 1
-		end
-		
-		if CLIENT then
-			if GetConVar( "ez_swep_lower_on_ally" ):GetBool() then
-				function IdleToLowerAnimation()
-					if self.IdleToLower == 0 and self.IdleLower == 0 and self.IdleToLowerTimer < CurTime() then
-						self:SendWeaponAnim(ACT_VM_IDLE_TO_LOWERED)
-						self.IdleToLower = 1
-						self.IdleToLowerTimer = CurTime() + 0.5
-						self.IdleLower = 1
-						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-					end
-					
-					if self.IdleLower == 1 and self.IdleToLower == 1 and self.IdleLowerTimer < CurTime() then
-						self:SendWeaponAnim(ACT_VM_IDLE_LOWERED)
-						self.IdleLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-						self.LowerToIdle = 0
-						self.LowerToIdleTimer = CurTime() + 1
-					end
-				end
-				
-				function LowerToIdleAnimation()
-					if self.LowerToIdle == 0 and self.IdleLower == 1 and self.LowerToIdleTimer < CurTime() then
-						self:SendWeaponAnim(ACT_VM_LOWERED_TO_IDLE)
-						self.IdleLower = 0
-						self.IdleToLower = 0
-						self.LowerToIdle = 1
-						self.IdleToLowerTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-						self.Idle = 0
-						self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-					end
-				end
-					
-				if not IsValid(self.Owner) or not self.Owner:IsPlayer() then return end  -- 确保武器的拥有者是玩家
-
-				local trace = self.Owner:GetEyeTrace()
-				if not IsValid(trace.Entity) or not trace.Entity:IsNPC()then return LowerToIdleAnimation() end
-				
-				local Friendly = IsFriendEntityName(trace.Entity:GetClass())
-				if Friendly then
-					IdleToLowerAnimation() -- 调用函数
-				end
-			end
-		end
 	end
 end
 
@@ -279,6 +438,18 @@ if CLIENT then
 	end
 
 	function SWEP:DrawWeaponSelection(x,y,wide,tall)
-		draw.SimpleText( self.SelectIcon, 'EZ2HUD', x + wide / 2, y + tall * 0.1 + 30, color_white, TEXT_ALIGN_CENTER )
+		if !self.WepSelectIcon or GetConVar("ez_swep_icon_use_font"):GetBool() then
+			draw.SimpleText( self.SelectIcon, 'EZ2HUD', x + wide / 2, y + 50, color_white, TEXT_ALIGN_CENTER )
+		else
+			surface.SetDrawColor( color_white, alpha )
+			surface.SetTexture( self.WepSelectIcon )
+
+			y = y + 10
+			x = x + 10
+			wide = wide - 20
+			tall = tall - 20
+
+			surface.DrawTexturedRect( x, y, wide, wide * 0.5 )
+		end
 	end
 end

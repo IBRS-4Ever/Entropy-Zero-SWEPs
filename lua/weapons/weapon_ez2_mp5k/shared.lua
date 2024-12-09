@@ -1,8 +1,9 @@
+AddCSLuaFile()
+DEFINE_BASECLASS("weapon_ez2_base")
+
 SWEP.Base           = "weapon_ez2_base"
 SWEP.Category				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= true
-SWEP.AdminSpawnable			= true
-SWEP.AdminOnly = false
 SWEP.PrintName				= "#ez2_swep.mp5k"
 SWEP.Slot				= 2
 SWEP.SlotPos				= 20
@@ -10,18 +11,15 @@ SWEP.ViewModel        = "models/weapons/ez2/c_mp5k.mdl"
 SWEP.WorldModel = "models/weapons/w_mp5k.mdl"
 SWEP.FiresUnderwater = false
 
-SWEP.Primary.Automatic			= true
+if CLIENT then
+	SWEP.WepSelectIcon	= surface.GetTextureID("selector/weapon_ez2_mp5k.vmt")
+end
+
 SWEP.Primary.ClipSize = 30
-SWEP.Primary.Delay = 0.10 
+SWEP.Primary.Delay = 0.1
 SWEP.Primary.DefaultClip = 200
 SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.Sound = Sound ( "Weapon_ez2_MP5K.Single" )
-
-SWEP.Secondary.ClipSize = 3
-SWEP.Secondary.Delay = 1
-SWEP.Secondary.DefaultClip = 1
-SWEP.Secondary.Automatic = true
-SWEP.Secondary.Ammo = "none"
 
 SWEP.HoldType = "smg"
 SWEP.ReloadSound = ""
@@ -31,6 +29,16 @@ SWEP.CrosshairX		= 0.75
 SWEP.CrosshairY		= 0.25
 
 SWEP.SelectIcon = "f"
+
+function SWEP:SetupDataTables()
+	BaseClass.SetupDataTables(self)
+	self:NetworkVar( "Int",	"BurstCount" )
+end
+
+function SWEP:Holster(wep)
+	if self:GetBurstCount() > 0 then return false end
+	return BaseClass.Holster(self, wep)
+end
 
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if ( !self:NPCCanPrimaryAttack() ) then return end
@@ -50,51 +58,73 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	self:EmitSound(self.Primary.Sound)
 	self:TakePrimaryAmmo( 1 )
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 end
 
 function SWEP:PrimaryAttack()
-	if ( !self:CanPrimaryAttack() ) then return end
-	if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-		local bullet = {}
-		bullet.Num = 1
-		bullet.Src = self.Owner:GetShootPos()
-		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-			
-		if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
-			self.Owner:ViewPunch(Angle( -0.5, math.Rand( -0.05, 0.05 ),0))
-		end
-				
-		if GetConVar( "ez_swep_no_bullet_spread" ):GetBool() then
-			bullet.Spread = Vector( 0, 0, 0 )
-		else
-			bullet.Spread = Vector( 0.03, 0.03, 0 )
-		end
-		bullet.Force = 5
-		bullet.Damage = GetConVar("ez2_swep_mp5k_plr_dmg"):GetInt()
-		bullet.Callback	= function(a,b,c)
-			self:BulletPenetrate(a,b,c)
-		end
-		self.Owner:FireBullets( bullet )
-				
-		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-		self.Owner:SetAnimation( PLAYER_ATTACK1 )
-		if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
-			self:TakePrimaryAmmo( 0 )
-		else
-			self:TakePrimaryAmmo( 1 )
-		end
-		self:EmitSound(self.Primary.Sound)
-		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
+	if CurTime() < self:GetNextPrimaryFire() then return end
+	if self:Clip1() < 3 then
+		self:SecondaryAttack()
+		return
 	end
-	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+
+	self:SetBurstCount(3)
+	self:Think()
+	self:SetNextPrimaryFire(CurTime() + 0.1)
 end
 
-function SWEP:SecondaryAttack()
+function SWEP:SecondaryAttack() 
+	if !self:TakePrimaryAmmo(1) then return end
+	local owner = self:GetOwner()
 
+	self:EmitSound(self.Primary.Sound)
+
+	owner:SetAnimation( PLAYER_ATTACK1 )
+	self:PlayActivity( self:GetPrimaryAttackActivity() )
+	self:ApplyViewKick(Angle( -0.5, math.Rand( -0.5, 0.5 ),0)) 
+
+	if SERVER then
+		sound.EmitHint(SOUND_COMBAT, self:GetPos(), 1500, 0.2, owner)
+	end
+	owner:MuzzleFlash()
+
+	self:ShootBullet(Vector( 0.05, 0.05, 0.05 ), GetConVar( "ez2_swep_mp5k_plr_dmg" ):GetInt(), 1)
+
+	self:SetShotsFired( self:GetShotsFired() + 1 )
+	self:SetNextPrimaryFire(CurTime() + 0.25)
+	self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
+	self:SetLastShootTime()
+end
+
+function SWEP:Think()
+	BaseClass.Think(self)
+	if game.SinglePlayer() and CLIENT then return end
+
+	if self:GetBurstCount() > 0 and self:GetNextPrimaryFire() <= CurTime() then
+		if not self:TakePrimaryAmmo(1) then return end
+
+		self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
+		self:PlayActivity( self:GetPrimaryAttackActivity() )
+		self:ShootBullet(Vector( 0.03, 0.03, 0.03 ), GetConVar( "ez2_swep_mp5k_plr_dmg" ):GetInt(), 1)
+		self:ApplyViewKick()
+		self:SetBurstCount(self:GetBurstCount() - 1)
+		self:EmitSound("Weapon_ez2_MP5K.Single")
+
+		self:SetNextSecondaryFire(CurTime() + 0.1 )
+		self:SetNextPrimaryFire(CurTime() + 0.1 )
+
+		if self:GetBurstCount() == 0 then
+			self:SetNextPrimaryFire(CurTime() + 0.25)
+			self:SetNextSecondaryFire(CurTime() + 0.25)
+		end
+	end
+end
+
+function SWEP:ApplyViewKick()
+	if GetConVar( "ez_swep_no_recoil" ):GetBool() then return end
+	local ang = Angle()
+	ang.x = util.SharedRandom("pewx", -.25, -.5)
+	ang.y = util.SharedRandom("pewy", -.6, .6	)
+	self:GetOwner():ViewPunch(ang)
 end
 
 function SWEP:GetNPCRestTimes()

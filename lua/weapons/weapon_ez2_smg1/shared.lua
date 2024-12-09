@@ -1,8 +1,6 @@
 SWEP.Base           = "weapon_ez2_base"
 SWEP.Category				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= true
-SWEP.AdminSpawnable			= true
-SWEP.AdminOnly = false
 SWEP.PrintName				= "#ez2_swep.smg1"
 SWEP.Slot				= 2
 SWEP.SlotPos				= 20
@@ -11,16 +9,16 @@ SWEP.ViewModel        = "models/weapons/ez2/v_smg1.mdl"
 SWEP.WorldModel = "models/weapons/w_smg1.mdl"
 SWEP.FiresUnderwater = false
 
-SWEP.Primary.Automatic			= true
+if CLIENT then
+	SWEP.WepSelectIcon	= surface.GetTextureID("selector/weapon_ez2_smg1.vmt")
+end
+
 SWEP.Primary.ClipSize = 45
 SWEP.Primary.Delay = 0.07
 SWEP.Primary.DefaultClip = 225
 SWEP.Primary.Ammo = "SMG1"
 
-SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.Delay = 1
-SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = true
 SWEP.Secondary.Ammo = "SMG1_Grenade"
 
 SWEP.HoldType = "smg"
@@ -86,43 +84,26 @@ function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 end
 
 function SWEP:PrimaryAttack()
-	if ( !self:CanPrimaryAttack() ) then return end
-	if ( IsFirstTimePredicted() ) then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-		local bullet = {}
-		bullet.Num = 1
-		bullet.Src = self.Owner:GetShootPos()
-		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-			
-		if GetConVar( "ez_swep_no_recoil" ):GetInt() == 0 then
-			self.Owner:ViewPunch(Angle( -0.5, math.Rand( -0.05, 0.05 ),0))
-		end
-				
-		if GetConVar( "ez_swep_no_bullet_spread" ):GetInt() == 0 then
-			bullet.Spread = Vector( 0.03, 0.03, 0 )
-		else
-			bullet.Spread = Vector( 0, 0, 0 )
-		end
-		bullet.Force = 5
-		bullet.Damage = GetConVar("ez2_swep_smg1_plr_dmg"):GetInt()
-		bullet.Callback	= function(a,b,c)
-			self:BulletPenetrate(a,b,c)
-		end
-		self.Owner:FireBullets( bullet )
-			
-		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-		self.Owner:SetAnimation( PLAYER_ATTACK1 )
-		if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
-			self:TakePrimaryAmmo( 0 )
-		else
-			self:TakePrimaryAmmo( 1 )
-		end
-		self:EmitSound( "Weapon_smg1.Single" )
-		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-		self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
+	if !self:TakePrimaryAmmo(1) then return end
+	local owner = self:GetOwner()
+
+	self:EmitSound("Weapon_smg1.Single")
+
+	owner:SetAnimation( PLAYER_ATTACK1 )
+	self:PlayActivity( self:GetPrimaryAttackActivity() )
+	self:ApplyViewKick()
+
+	if SERVER then
+		sound.EmitHint(SOUND_COMBAT, self:GetPos(), 1500, 0.2, owner)
 	end
-	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	owner:MuzzleFlash()
+
+	self:ShootBullet(Vector( 0.03, 0.03, 0.03 ), GetConVar( "ez2_swep_smg1_plr_dmg" ):GetInt(), 1)
+
+	self:SetShotsFired( self:GetShotsFired() + 1 )
+	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+	self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
+	self:SetLastShootTime()
 end
 
 function SWEP:SecondaryAttack()
@@ -150,15 +131,16 @@ function SWEP:SecondaryAttack()
 		
 		self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	else 
 		self:EmitSound("Weapon_smg1.Empty")
 		self:SetNextPrimaryFire( CurTime() + 0.25 )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 	end
+end
+
+function SWEP:ApplyViewKick()
+	if GetConVar( "ez_swep_no_recoil" ):GetBool() then return end
+	self:DoMachineGunKick(1, self:GetFireDuration(), 2)
 end
 
 function SWEP:GetNPCRestTimes()

@@ -1,91 +1,122 @@
+AddCSLuaFile()
+DEFINE_BASECLASS("weapon_ez2_base")
+
 SWEP.Base           = "weapon_ez2_base"
 SWEP.Category				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= true
-SWEP.AdminSpawnable			= true
-SWEP.AdminOnly = false
 SWEP.PrintName				= "#ez2_swep.shotgun"
 SWEP.Slot				= 3
 SWEP.SlotPos				= 20
 SWEP.ViewModel        = "models/weapons/ez2/c_shotgun.mdl"
 SWEP.WorldModel = "models/weapons/w_shotgun.mdl"
 
-SWEP.Primary.Automatic			= true
+if CLIENT then
+	SWEP.WepSelectIcon	= surface.GetTextureID("selector/weapon_ez2_shotgun.vmt")
+end
+
 SWEP.Primary.ClipSize = 6
 SWEP.Primary.Delay = 0.6
 SWEP.Primary.DefaultClip = 18
 SWEP.Primary.Ammo = "buckshot"
 
-SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.Delay = 1
-SWEP.Secondary.Damage = 0
-SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = true
-SWEP.Secondary.Ammo = "none"
 
 SWEP.HoldType = "shotgun"
-SWEP.ReloadSound = "Weapon_Shotgun.Reload"
+SWEP.ReloadSound = "Weapon_ez2_Shotgun.Reload"
 SWEP.NPCReloadSound = "Weapon_Shotgun.Reload"
 
-SWEP.CrosshairX		= 0
 SWEP.CrosshairY		= 0.5
 
 SWEP.SelectIcon = "h"
 
 function SWEP:SetupDataTables()
-	self:NetworkVar( "Bool",	"IsReloading")
-	self:NetworkVar( "Bool", 	"NeedPump" )
-	self:NetworkVar( "Bool", 	"InterruptReload" )
+	BaseClass.SetupDataTables(self)
+	self:NetworkVar( "Bool", "NeedPump" )
+	self:NetworkVar( "Bool", "InterruptReload" )
 
 	if SERVER then
-		self:SetIsReloading(false)
 		self:SetNeedPump(false)
 	end
 end
 
-function SWEP:Reloading()
-	if self:Clip1() < self:GetMaxClip1() then
-		self:SendWeaponAnim( ACT_VM_RELOAD )
-		local time = self.Owner:GetViewModel():SequenceDuration()
-		self:EmitSound( self.ReloadSound )
-		self:SetClip1( self:Clip1() + 1 )
-		timer.Create( "EZ2_Shotgun_Reload_Timer", time, 1, function() 
-			if !IsValid(self) then return end
-			self:Reloading()
-		end)
-	else
-		self:ReloadFinished()
-		return false
+function SWEP:BeginReload()
+	if self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoType()) <= 0 then return end -- no shells ?
+
+	self:PlayActivity(ACT_SHOTGUN_RELOAD_START, true)
+	self:GetOwner():SetAnimation( PLAYER_RELOAD )
+	self:SetIsReloading(true)
+	self:SetInterruptReload(false)
+end
+
+function SWEP:LoadShell()
+	local owner = self:GetOwner()
+	if self:Clip1() == self:GetMaxClip1() or owner:GetAmmoCount(self:GetPrimaryAmmoType()) <= 0 then return end -- no shells ?
+
+	self:SetClip1(self:Clip1() + 1)
+	owner:RemoveAmmo(1, self:GetPrimaryAmmoType())
+end
+
+function SWEP:ReloadCycle()
+	self:PlayActivity(ACT_VM_RELOAD, true)
+	self:EmitSound("Weapon_ez2_Shotgun.Reload")
+	if IsFirstTimePredicted() then self:LoadShell() end
+end
+
+function SWEP:FinishReload()
+	self:PlayActivity(ACT_SHOTGUN_RELOAD_FINISH, true)
+	self:SetIsReloading(false)
+end
+
+function SWEP:Pump()
+	self:PlayActivity(ACT_SHOTGUN_PUMP, true)
+	self:EmitSound("Weapon_ez2_Shotgun.Special1")
+	self:SetNeedPump(false)
+end
+
+function SWEP:ShouldInterrupt()
+	local owner = self:GetOwner()
+	return owner:KeyDown(IN_ATTACK) or owner:KeyDown(IN_ATTACK2)
+end
+
+function SWEP:Think()
+	if game.SinglePlayer() and CLIENT then return end
+	local owner = self:GetOwner()
+
+	if not self:GetIsReloading() and self:Clip1() == 0 and self:CanReload() then
+		self:Reload()
 	end
-end
 
-function SWEP:ReloadFinished()
-	self:SendWeaponAnim( ACT_SHOTGUN_RELOAD_FINISH )
-	self:SetIsReloading( false )
-	self.Idle = 0
-	self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-end
+	if self:GetNextIdleTime() <= CurTime() then
+		if self:GetIsReloading() then
+			-- if the player is holding down the trigger, let them interrupt
+			if self:GetInterruptReload() then
+				if self:ShouldInterrupt() then
+					self:SetIsReloading(false)
+					self:SetNextPrimaryFire(CurTime())
+					self:SetNextSecondaryFire(CurTime())
+				else
+					self:FinishReload()
+				end
+				return
+			end
 
-function SWEP:Reload()
-	
-	if !self.Owner:IsNPC() then
-		if !self:GetIsReloading() and self:Clip1() < self:GetMaxClip1() then
-			self:SetIsReloading( true )
-			if !IsValid(self) then return end
-			if !(self:Clip1() < self:GetMaxClip1()) then return false end
-			self:SendWeaponAnim( ACT_SHOTGUN_RELOAD_START )
-			self:GetOwner():SetAnimation( PLAYER_RELOAD )
-			local time = self.Owner:GetViewModel():SequenceDuration()
-			timer.Simple( time, function() 
-				if !IsValid(self) then return end
-				self:Reloading()
-			end )
-		elseif self:Clip1() == self.Primary.ClipSize and self.NextFirstDrawTimer < CurTime() and self.FirstDrawing == 0 and GetConVar( "ez_swep_firstdraw_by_reload" ):GetBool() then
-			self:PlayAnim( self.FirstDrawAnimation )
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			if self:Clip1() < self:GetMaxClip1() and owner:GetAmmoCount(self:GetPrimaryAmmoType()) > 0 then
+				self:ReloadCycle()
+			else
+				self:FinishReload()
+			end
+		else
+			self:PlayActivity(ACT_VM_IDLE)
+
+			if self:GetNeedPump() and not self:GetIsReloading() then
+				self:Pump()
+				return
+			end
 		end
-	else
-		self.Owner:SetSchedule(SCHED_RELOAD)
-		self:EmitSound( self.NPCReloadSound ) 
+	end
+
+	if self:GetIsReloading() and self:ShouldInterrupt() and self:Clip1() > 0 then
+		self:SetInterruptReload(true)
 	end
 end
 
@@ -108,7 +139,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 		end
 		self.Owner:FireBullets( bullet )
 				
-		self:EmitSound("Weapon_shotgun.Single")
+		self:EmitSound("Weapon_ez2_Shotgun.NPC_Single")
 		self:TakePrimaryAmmo( 1 )
 	end
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
@@ -129,97 +160,62 @@ function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 	end
 	self.Owner:FireBullets( bullet )
 		
-	self:EmitSound("Weapon_shotgun.Double")
+	self:EmitSound("Weapon_ez2_Shotgun.Double")
 	self:TakePrimaryAmmo( 2 )
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 end
 
-function SWEP:Pump()
-	if !IsValid(self) then return end
-	timer.Simple( self.Owner:GetViewModel():SequenceDuration(), function() 
-		if !IsValid(self) then return end
-		self:SendWeaponAnim( ACT_SHOTGUN_PUMP )
-		self:EmitSound("Weapon_Shotgun.Special1")
-		self.Idle = 0
-		self.IdleTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-	end )
-end
-
 function SWEP:PrimaryAttack()
-	if ( !self:CanPrimaryAttack() ) then return end
-	if ( IsFirstTimePredicted() ) then
-		self.SetInterruptReload(true)
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-		local bullet = {}
-		bullet.Num = GetConVar( "ez2_swep_shotgun_plr_num" ):GetInt()
-		bullet.Src = self.Owner:GetShootPos()
-		bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-		bullet.Spread = Vector( 0.05, 0.05, 0 )
-		bullet.Force = 5
-		bullet.Damage = GetConVar( "ez2_swep_shotgun_plr_dmg" ):GetInt()
-		bullet.TracerName = "Tracer"
-		bullet.Callback	= function(a,b,c)
-			self:BulletPenetrate(a,b,c)
-		end
-		self.Owner:FireBullets( bullet )
-			
-		if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
-			self.Owner:ViewPunch( Angle( -4, math.Rand( -2, 2 ),0) )
-		end
-		
-		self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-		self.Owner:SetAnimation( PLAYER_ATTACK1 )
-			
-		if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
-			self:TakePrimaryAmmo( 0 )
-		else
-			self:TakePrimaryAmmo( 1 )
-		end
-				
-		self:EmitSound("Weapon_shotgun.Single")
-		
+	if self:GetNeedPump() or self:GetIsReloading() then return end
+	if !self:TakePrimaryAmmo(1) then return end
+	local owner = self:GetOwner()
+	self.SetInterruptReload(true)
+
+	self:EmitSound("Weapon_ez2_Shotgun.Single")
+
+	owner:SetAnimation( PLAYER_ATTACK1 )
+	self:SetIsReloading(false)
+	self:SetNeedPump(true)
+	self:ApplyViewKick(Angle( -4, math.Rand( -2, 2 ),0))
+	self:PlayActivity( ACT_VM_PRIMARYATTACK, true )
+
+	if SERVER then
+		sound.EmitHint(SOUND_COMBAT, self:GetPos(), 1500, 0.2, owner)
 	end
-	self:Pump()
-	self:SetNextPrimaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() + self.Primary.Delay )
-	self:SetNextSecondaryFire( CurTime() + self.Owner:GetViewModel():SequenceDuration() + self.Primary.Delay )
+	owner:MuzzleFlash()
+
+	self:ShootBullet(Vector( 0.05, 0.05, 0.05 ), GetConVar( "ez2_swep_shotgun_plr_dmg" ):GetInt(), GetConVar( "ez2_swep_shotgun_plr_num" ):GetInt())
+
+	self:SetNextPrimaryFire(CurTime() + 100.0)
+	self:SetNextSecondaryFire(CurTime() + 100.0)
 end
 
 function SWEP:SecondaryAttack()
-	if self:Clip1() >= 2 then
-		if ( IsFirstTimePredicted() ) then
-			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
-			local bullet = {}
-			bullet.Num = GetConVar( "ez2_swep_shotgun_plr_num" ):GetInt() * 2
-			bullet.Src = self.Owner:GetShootPos()
-			bullet.Dir = (self.Owner:EyeAngles()+self.Owner:GetViewPunchAngles()):Forward() 
-			bullet.Spread = Vector( 0.05, 0.05, 0 )
-			bullet.Force = 5
-			bullet.Damage = GetConVar( "ez2_swep_shotgun_plr_dmg" ):GetInt()
-			bullet.TracerName = "Tracer"
-			self.Owner:FireBullets( bullet )
-				
-			if !GetConVar( "ez_swep_no_recoil" ):GetBool() then
-				self.Owner:ViewPunch(Angle( -4, math.Rand( -2, 2 ),0))
-			end
-			
-			self:SendWeaponAnim( ACT_VM_PRIMARYATTACK )
-			self.Owner:SetAnimation( PLAYER_ATTACK1 )
-				
-			if GetConVar( "ez_swep_infinite_ammo" ):GetBool() then
-				self:TakePrimaryAmmo( 0 )
-			else
-				self:TakePrimaryAmmo( 2 )
-			end
-					
-			self:EmitSound("Weapon_shotgun.Double")
-			self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
-			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
-		end
-		self:Pump()
-	else
-		self:PrimaryAttack()
+	if self:GetNeedPump() or self:GetIsReloading() then return end
+	if !self:TakePrimaryAmmo(2) then return self.PrimaryAttack() end
+	local owner = self:GetOwner()
+	self.SetInterruptReload(true)
+
+	self:EmitSound("Weapon_ez2_Shotgun.Double")
+
+	owner:SetAnimation( PLAYER_ATTACK1 )
+	self:SetIsReloading(false)
+	self:SetNeedPump(true)
+	self:PlayActivity( ACT_VM_PRIMARYATTACK, true )
+	self:ApplyViewKick(Angle( -4, math.Rand( -2, 2 ),0))
+
+	if SERVER then
+		sound.EmitHint(SOUND_COMBAT, self:GetPos(), 1500, 0.2, owner)
 	end
+	owner:MuzzleFlash()
+
+	self:ShootBullet(Vector( 0.05, 0.05, 0.05 ), GetConVar( "ez2_swep_shotgun_plr_dmg" ):GetInt(), GetConVar( "ez2_swep_shotgun_plr_num" ):GetInt() * 2)
+
+	self:SetShotsFired( self:GetShotsFired() + 1 )
+	self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
+	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+	self:SetLastShootTime()	
 end
 
 function SWEP:GetNPCRestTimes()

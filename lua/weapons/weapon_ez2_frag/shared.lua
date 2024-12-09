@@ -1,8 +1,6 @@
 SWEP.Base           = "weapon_ez2_base"
 SWEP.Category				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= false 
-SWEP.AdminSpawnable			= false 
-SWEP.AdminOnly = false
 SWEP.PrintName				= "#ez2_swep.grenade"
 SWEP.Slot				= 1
 SWEP.SlotPos				= 20
@@ -15,12 +13,7 @@ SWEP.Primary.Delay = 0.1
 SWEP.Primary.DefaultClip = -1
 SWEP.Primary.Ammo = "grenade"
 
-SWEP.Secondary.ClipSize = -1
-SWEP.Secondary.Delay = 0
-SWEP.Secondary.Damage = 0
-SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
-SWEP.Secondary.Ammo = "none"
 
 SWEP.HoldType = "grenade"
 SWEP.ReloadSound = "Weapon_EZ2_Pistol_Madcop.Reload"
