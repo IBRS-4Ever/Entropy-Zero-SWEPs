@@ -389,7 +389,7 @@ end
 function SWEP:Deploy()
 	if self.Owner:IsNPC() then return end
 	self:PlayActivity(ACT_VM_DRAW, true, 0.8)
-
+	
 	if self.SetFireDuration and self.SetShotsFired then
 		self:SetFireDuration(0)
 		self:SetShotsFired(0)

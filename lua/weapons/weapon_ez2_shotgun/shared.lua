@@ -193,7 +193,7 @@ end
 
 function SWEP:SecondaryAttack()
 	if self:GetNeedPump() or self:GetIsReloading() then return end
-	if !self:TakePrimaryAmmo(2) then return self.PrimaryAttack() end
+	if !self:TakePrimaryAmmo(2) then return self:PrimaryAttack() end
 	local owner = self:GetOwner()
 	self.SetInterruptReload(true)
 

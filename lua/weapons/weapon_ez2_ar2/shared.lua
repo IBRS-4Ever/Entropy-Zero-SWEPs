@@ -115,16 +115,24 @@ end
 
 function SWEP:SecondaryAttack()
 	if ( IsFirstTimePredicted() ) then
-		if !self:TakeSecondaryAmmo(1) then return end
-		self:EmitSound("Weapon_CombineGuard.Special1")
-		self:PlayActivity(ACT_VM_FIDGET, true)
-		timer.Create( "AR2AltFire"..self.Owner:EntIndex(), self.Owner:GetViewModel():SequenceDuration(), 1, function()
-			self:LaunchEnergyBall( 1500, 10, GetConVar("ez2_swep_ar2_ball_explode_time"):GetInt() )
-			self:ApplyViewPunch( Angle(-10,0,0) )
-			self:TakeSecondaryAmmo(1)
-			timer.Remove( "AR2AltFire"..self.Owner:EntIndex() )
-		end)
-		
+		if self.Owner:GetAmmoCount( self.Secondary.Ammo ) > 0 or GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 1 then
+			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+			self:EmitSound("Weapon_CombineGuard.Special1")
+			self:SendWeaponAnim( ACT_VM_FIDGET, true )
+			timer.Create( "AR2AltFire"..self.Owner:EntIndex(), 0.6, 1, function()
+				self:LaunchEnergyBall( 1500, 10, GetConVar("ez2_swep_ar2_ball_explode_time"):GetInt() )
+				self:ApplyViewPunch( Angle(-10,0,0) )
+				self:TakeSecondaryAmmo(1)
+				timer.Remove( "AR2AltFire"..self.Owner:EntIndex() )
+			end)
+			self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
+			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+			
+		else 
+			self:EmitSound("Weapon_IRifle.Empty")
+			self:SetNextPrimaryFire( CurTime() + 0.25 )
+			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+		end
 	end
 end
 

@@ -113,7 +113,7 @@ function SWEP:SecondaryAttack()
 		if self.Owner:GetAmmoCount( self.Secondary.Ammo ) > 0 or GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 1 then
 			self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
 			self:EmitSound("Weapon_EZ2_AR2_Proto.Special1")
-			self:SendWeaponAnim( ACT_VM_FIDGET )
+			self:SendWeaponAnim( ACT_VM_FIDGET, true )
 			timer.Create( "ProtoTypeAR2AltFire"..self.Owner:EntIndex(), 0.6, 1, function()
 				self:LaunchEnergyBall( 2500, 5, GetConVar("ez2_swep_proto_ar2_ball_explode_time"):GetInt() )
 				self:LaunchEnergyBall( 2500, 5, GetConVar("ez2_swep_proto_ar2_ball_explode_time"):GetInt(), Angle(0, -2.5, 0) )
