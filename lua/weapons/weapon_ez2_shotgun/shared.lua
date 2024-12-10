@@ -79,7 +79,7 @@ function SWEP:ShouldInterrupt()
 end
 
 function SWEP:Think()
-	if game.SinglePlayer() and CLIENT then return end
+	if game.SinglePlayer() and CLIENT then self.ViewModelFOV = GetConVar("ez_swep_fov"):GetInt() return end
 	local owner = self:GetOwner()
 
 	if not self:GetIsReloading() and self:Clip1() == 0 and self:CanReload() then
