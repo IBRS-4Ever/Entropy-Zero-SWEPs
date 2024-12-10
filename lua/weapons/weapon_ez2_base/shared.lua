@@ -214,7 +214,7 @@ function SWEP:ShootBullet(spread, damage, count)
 end
 
 function SWEP:Think()
-	if game.SinglePlayer() and CLIENT then return end
+	if game.SinglePlayer() and CLIENT then self.ViewModelFOV = GetConVar("ez_swep_fov"):GetInt() return end
 	if self.Owner:IsNPC() then return end
 
 	local owner = self:GetOwner()
@@ -242,6 +242,11 @@ function SWEP:Idle()
 	if self:GetNextIdleTime() <= CurTime() then
 		self:PlayActivity(ACT_VM_IDLE)
 	end
+end
+
+function SWEP:LowerWeapon()
+	if !GetConVar("ez_swep_lower_on_ally"):GetBool() then return end
+	if !IsFirstTimePredicted() then return end
 end
 
 function SWEP:GetPrimaryAttackActivity()

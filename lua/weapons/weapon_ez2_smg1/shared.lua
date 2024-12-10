@@ -63,7 +63,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 		end
 	end
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+	self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 end
 
 function SWEP:NPCShoot_Secondary( shootPos, shootDir )
@@ -77,7 +77,7 @@ function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 			grenade:SetOwner(self.Owner)
 			grenade:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
 			self:EmitSound("Weapon_SMG1.Double")
-			self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+			self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 		end
 	end)

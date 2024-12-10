@@ -31,7 +31,7 @@ CreateConVar( "ez_swep_no_bullet_spread", 0 , FCVAR_SERVER_CAN_EXECUTE, "No Bull
 CreateConVar( "ez_swep_lower_on_ally", 0 , FCVAR_SERVER_CAN_EXECUTE, "Make the weapons lower down when aiming at an ally.", 0, 1)
 CreateConVar( "ez_swep_firstdraw_animation", 1 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Enable/disable 'Firstdraw' animation.", 0, 1)
 CreateConVar( "ez_swep_firstdraw_by_reload", 0 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Enable/disable play 'Firstdraw' animation when pressed [RELOAD] Key.", 0, 1)
-CreateConVar( "ez_swep_fov", 54 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Sets Entropy Zero SWEPs' FOV.", 0, 180)
+CreateConVar( "ez_swep_fov", 54 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Sets Entropy Zero SWEPs' FOV. Default: 54", 0, 180)
 CreateConVar( "ez_swep_replacement", 0 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Replace NPC's weapons with Entropy Zero SWEP's.", 0, 1)
 CreateConVar( "ez_swep_bullet_penetrate", 0 , FCVAR_ARCHIVE + FCVAR_SERVER_CAN_EXECUTE + FCVAR_REPLICATED, "Bullet Penetrate.", 0, 1)
 

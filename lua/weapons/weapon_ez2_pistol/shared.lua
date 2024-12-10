@@ -44,8 +44,8 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 		
 	self:EmitSound("Weapon_EZ2_Pistol_Madcop.Single")
 	self:TakePrimaryAmmo( 1 )
-	self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
-	self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
+	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+	self:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 end
 
 function SWEP:PrimaryAttack()
