@@ -672,3 +672,133 @@ sound.Add(
     soundlevel = SNDLVL_NORM,
     sound = "weapons/ez2/shotgun/shotgun_movement3.wav"
 } )
+
+// SMG1 (EZ2)
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Single",
+    channel = CHAN_WEAPON,
+    volume = 0.55,
+    soundlevel = SNDLVL_GUNFIRE,
+    pitch = math.random(95, 105),
+    sound = "weapons/ez2/smg1/smg1_fire1.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.NPC_Single",
+    channel = CHAN_WEAPON,
+    volume = 0.7,
+    soundlevel = SNDLVL_GUNFIRE,
+    pitch = math.random(95, 105),
+    sound = "weapons/ez2/smg1/npc_smg1_fire1.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.FirstDraw",
+    channel = CHAN_WEAPON,
+    volume = 1,
+    soundlevel = SNDLVL_NORM,
+    pitch = math.random(98, 105),
+    sound = "weapons/ez2/smg1/smg1_firstdraw.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Draw",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_draw.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Movement1",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_movement1.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Movement2",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_movement2.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Movement3",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_movement3.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Inspect1",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_inspect1.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Inspect2",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_inspect2.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Inspect3",
+    channel = CHAN_AUTO,
+    volume = 0.9,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_inspect3.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Reload1",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_reload1.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Reload2",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_reload2.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Reload3",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_reload3.wav"
+} )
+
+sound.Add(
+{
+    name = "Weapon_ez2_SMG1.Reload4",
+    channel = CHAN_AUTO,
+    volume = 0.7,
+    soundlevel = SNDLVL_NORM,
+    sound = "weapons/ez2/smg1/smg1_reload4.wav"
+} )

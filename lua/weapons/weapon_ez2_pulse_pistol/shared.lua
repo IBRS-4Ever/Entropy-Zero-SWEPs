@@ -5,7 +5,7 @@ SWEP.PrintName				= "#ez2_swep.pulse_pistol"
 SWEP.Slot				= 1
 SWEP.SlotPos				= 20
 SWEP.ViewModel        = "models/weapons/ez2/c_pulsepistol.mdl"
-SWEP.WorldModel = "models/weapons/w_pulsepistol.mdl"
+SWEP.WorldModel = "models/weapons/ez2/w_pulsepistol.mdl"
 
 if CLIENT then
 	SWEP.WepSelectIcon	= surface.GetTextureID("selector/weapon_ez2_pulse_pistol.vmt")

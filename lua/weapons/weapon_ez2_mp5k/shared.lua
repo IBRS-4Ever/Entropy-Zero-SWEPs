@@ -104,7 +104,7 @@ function SWEP:Think()
 
 		self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 		self:PlayActivity( self:GetPrimaryAttackActivity() )
-		self:ShootBullet(Vector( 0.03, 0.03, 0.03 ), GetConVar( "ez2_swep_mp5k_plr_dmg" ):GetInt(), 1)
+		self:ShootBullet(Vector( 0.01, 0.01, 0.01 ), GetConVar( "ez2_swep_mp5k_plr_dmg" ):GetInt(), 1)
 		self:ApplyViewKick()
 		self:SetBurstCount(self:GetBurstCount() - 1)
 		self:EmitSound("Weapon_ez2_MP5K.Single")

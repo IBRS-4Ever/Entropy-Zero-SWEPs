@@ -58,7 +58,7 @@ end
 
 function SWEP:ReloadCycle()
 	self:PlayActivity(ACT_VM_RELOAD, true)
-	self:EmitSound("Weapon_ez2_Shotgun.Reload")
+	self:EmitSound(self.ReloadSound)
 	if IsFirstTimePredicted() then self:LoadShell() end
 end
 

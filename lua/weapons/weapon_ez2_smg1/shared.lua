@@ -46,7 +46,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	end
 	self.Owner:FireBullets( bullet )
 		
-	self:EmitSound( "Weapon_smg1.Single" )
+	self:EmitSound( "Weapon_ez2_smg1.NPC_Single" )
 	self:TakePrimaryAmmo( 1 )
 	
 	if !(IsValid(self.Owner:GetEnemy())) then return end
@@ -87,7 +87,7 @@ function SWEP:PrimaryAttack()
 	if !self:TakePrimaryAmmo(1) then return end
 	local owner = self:GetOwner()
 
-	self:EmitSound("Weapon_smg1.Single")
+	self:EmitSound("Weapon_ez2_smg1.Single")
 
 	owner:SetAnimation( PLAYER_ATTACK1 )
 	self:PlayActivity( self:GetPrimaryAttackActivity() )
