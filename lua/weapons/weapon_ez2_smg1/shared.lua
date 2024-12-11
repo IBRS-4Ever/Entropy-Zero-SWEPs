@@ -107,8 +107,7 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	if self.Owner:GetAmmoCount( self.Secondary.Ammo ) > 0 or GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 1 then
-		self.NextFirstDrawTimer = CurTime() + self.Owner:GetViewModel():SequenceDuration()
+	if self:TakeSecondaryAmmo( 1 ) then
 		if SERVER then
 			local grenade = ents.Create( "grenade_ar2" )
 			grenade:SetOwner(self.Owner)
@@ -118,17 +117,11 @@ function SWEP:SecondaryAttack()
 			grenade:Activate()
 			grenade:SetVelocity(self.Owner:GetAimVector()*1000 + Vector(0,0,80))
 			grenade:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
-							
-			if GetConVar( "ez_swep_infinite_ammo" ):GetInt() == 0 then
-				self:TakeSecondaryAmmo( 1 )
-			else
-				self:TakeSecondaryAmmo( 0 )
-			end
-			self:SendWeaponAnim( ACT_VM_SECONDARYATTACK )
+
+			self:PlayActivity( ACT_VM_SECONDARYATTACK )
 			self.Owner:SetAnimation( PLAYER_ATTACK1 )
 			self:EmitSound("Weapon_SMG1.Double")
 		end
-		
 		self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 		self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )
 	else 
