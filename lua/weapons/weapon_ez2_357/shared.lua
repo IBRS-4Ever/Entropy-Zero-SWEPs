@@ -44,19 +44,8 @@ end
 
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if ( !self:NPCCanPrimaryAttack() ) then return end
-	local bullet = {}
-	bullet.Num = 1
-	bullet.Src = self.Owner:GetShootPos()
-	bullet.Dir = self.Owner:GetAimVector()
-	bullet.Spread = Vector( 0, 0, 0 )
-	bullet.Force = 15
-	bullet.Damage = GetConVar( "ez2_swep_357_npc_dmg" ):GetInt()
-	bullet.TracerName = "Tracer"
-	bullet.Callback	= function(a,b,c)
-		self:BulletPenetrate(a,b,c)
-	end
-	self.Owner:FireBullets( bullet )
-		
+	self:ShootBullet(Vector( 0.04, 0.04, 0.04 ), GetConVar( "ez2_swep_357_npc_dmg" ):GetInt(), 1)
+	
 	self:EmitSound("Weapon_ez2_357.Single")
 	self:TakePrimaryAmmo( 1 )
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
@@ -71,7 +60,6 @@ function SWEP:PrimaryAttack()
 
 	owner:SetAnimation( PLAYER_ATTACK1 )
 	self:PlayActivity( ACT_VM_PRIMARYATTACK )
-	self:ApplyViewKick()
 
 	if SERVER then
 		sound.EmitHint(SOUND_COMBAT, self:GetPos(), 1500, 0.2, owner)
@@ -79,6 +67,7 @@ function SWEP:PrimaryAttack()
 	owner:MuzzleFlash()
 
 	self:ShootBullet(Vector( 0, 0, 0 ), GetConVar( "ez2_swep_357_plr_dmg" ):GetInt(), 1)
+	self:ApplyViewKick()
 
 	self:SetShotsFired( self:GetShotsFired() + 1 )
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
@@ -86,11 +75,11 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:GetNPCRestTimes()
-    return 0.75, 0.75
+	return 0.75, 1.5
 end
 
 function SWEP:GetNPCBurstSettings()
-    -- return 6, 12, 0.1
+	return 1, 1, 1.5
 end
 
 list.Add( "NPCUsableWeapons", { class = "weapon_ez2_357", title = "357 (EZ2)" } )

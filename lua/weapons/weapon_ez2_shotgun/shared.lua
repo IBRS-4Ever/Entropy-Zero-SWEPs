@@ -126,18 +126,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if self:Clip1() >= 2 && IsValid(self.Owner:GetEnemy()) && self.Owner:GetEnemy():GetPos():Distance(self.Owner:GetPos()) <= 250 then
 		self:NPCShoot_Secondary()
 	else
-		local bullet = {}
-		bullet.Num = GetConVar( "ez2_swep_shotgun_npc_num" ):GetInt()
-		bullet.Src = self.Owner:GetShootPos()
-		bullet.Dir = self.Owner:GetAimVector()
-		bullet.Spread = Vector( 0.05, 0.05, 0 )
-		bullet.Force = 5
-		bullet.Damage = GetConVar("ez2_swep_shotgun_npc_dmg"):GetInt()
-		bullet.TracerName = "Tracer"
-		bullet.Callback	= function(a,b,c)
-			self:BulletPenetrate(a,b,c)
-		end
-		self.Owner:FireBullets( bullet )
+		self:ShootBullet(Vector( 0.1, 0.1, 0.1 ), GetConVar( "ez2_swep_shotgun_npc_dmg" ):GetInt(), GetConVar( "ez2_swep_shotgun_npc_num" ):GetInt()*2)
 				
 		self:EmitSound("Weapon_ez2_Shotgun.NPC_Single")
 		self:TakePrimaryAmmo( 1 )
@@ -147,19 +136,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 end
 
 function SWEP:NPCShoot_Secondary( shootPos, shootDir )
-	local bullet = {}
-	bullet.Num = GetConVar( "ez2_swep_shotgun_npc_num" ):GetInt() * 2
-	bullet.Src = self.Owner:GetShootPos()
-	bullet.Dir = self.Owner:GetAimVector()
-	bullet.Spread = Vector( 0.05, 0.05, 0 )
-	bullet.Force = 5
-	bullet.Damage = GetConVar("ez2_swep_shotgun_npc_dmg"):GetInt()
-	bullet.TracerName = "Tracer"
-	bullet.Callback	= function(a,b,c)
-		self:BulletPenetrate(a,b,c)
-	end
-	self.Owner:FireBullets( bullet )
-		
+	self:ShootBullet(Vector( 0.1, 0.1, 0.1 ), GetConVar( "ez2_swep_shotgun_npc_dmg" ):GetInt(), GetConVar( "ez2_swep_shotgun_npc_num" ):GetInt()*2)
 	self:EmitSound("Weapon_ez2_Shotgun.Double")
 	self:TakePrimaryAmmo( 2 )
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )

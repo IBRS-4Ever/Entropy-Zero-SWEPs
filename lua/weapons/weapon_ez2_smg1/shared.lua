@@ -33,19 +33,8 @@ SWEP.SelectIcon = "e"
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
-	local bullet = {}
-	bullet.Num = 1
-	bullet.Src = self.Owner:GetShootPos()
-	bullet.Dir = self.Owner:GetAimVector()
-	bullet.Spread = Vector( 0.03, 0.03, 0 )
-	bullet.Force = 5
-	bullet.Damage = GetConVar("ez2_swep_smg1_npc_dmg"):GetInt()
-	bullet.AmmoType = self.Primary.Ammo
-	bullet.Callback	= function(a,b,c)
-		self:BulletPenetrate(a,b,c)
-	end
-	self.Owner:FireBullets( bullet )
-		
+	self:ShootBullet(Vector( 0.06, 0.06, 0.06 ), GetConVar( "ez2_swep_smg1_npc_dmg" ):GetInt(), 1)
+
 	self:EmitSound( "Weapon_ez2_smg1.NPC_Single" )
 	self:TakePrimaryAmmo( 1 )
 	
@@ -55,6 +44,7 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 			if SERVER then
 				if self.Owner:GetGroundSpeedVelocity()==Vector(0,0,0) then
 					timer.Simple(0.5, function()
+						if !(IsValid(self) and IsValid(self.Owner)) then return end
 						self.Owner:SetSaveValue( "m_fIsElite", true )
 						self.Owner:SetSaveValue( "m_hForcedGrenadeTarget", self.Owner:GetEnemy() )
 					end)

@@ -189,7 +189,7 @@ function SWEP:ShootBullet(spread, damage, count)
 	local num = count or 1
 	if GetConVar("ez_swep_no_bullet_spread"):GetBool() then spread = Vector(0,0,0) end
 	-- use built-in spread here because the shotgun feels even worse when calling FireBullets multiple times instead of using Num
-	if num > 1 then
+	if num > 1 or owner:IsNPC() then
 		owner:FireBullets({
 							Src = src,
 							Dir = vec,
@@ -315,28 +315,31 @@ hook.Add( "EntityEmitSound", "EZ_SWEPS_DO_ALTIFRE",function(data)--we use sound 
 	local AltFire = ar2_ball[data.OriginalSoundName]
 	local Entity = data.Entity
 	if AltFire and Entity:GetClass() == "npc_combine_s" then
-		if !(weapons.IsBasedOn(Entity:GetActiveWeapon():GetClass(), "weapon_ez2_base")) then return end
 		Entity:GetActiveWeapon():NPCShoot_Secondary()
 		return false
 	end
 end)
 
 function SWEP:NPCShoot_Primary() end
+function SWEP:NPCShoot_Secondary() end
 
-function SWEP:BulletPenetrate(attacker, tr, dmginfo, aimvect)
+function SWEP:BulletPenetrate(attacker, tr, dmginfo)
 	if !GetConVar("ez_swep_bullet_penetrate"):GetBool() then return end
 	if IsValid(attacker) then
 		if CLIENT then return end
 		local mat = tr.MatType
-		if mat == MAT_SAND then return false end
 		local dir = tr.Normal * 16
+		local trace = {start=tr.HitPos + dir,endpos=tr.HitPos,mask=MASK_SHOT}
+		local fDamageMulti = 0.5
+		
+		if mat == MAT_SAND then return false end
 		if mat == MAT_GLASS or mat == MAT_PLASTIC or mat == MAT_WOOD or mat == MAT_FLESH or mat == MAT_ALIENFLESH then
 			dir = tr.Normal * 32
 		end
-		local trace = {start=tr.HitPos + dir,endpos=tr.HitPos,mask=MASK_SHOT}
+		
 		trace = util.TraceLine(trace) 
 		if trace.StartSolid or trace.Fraction >= 1 or tr.Fraction <= 0 then return false end
-		local fDamageMulti = 0.5
+		
 		if (mat == MAT_CONCRETE) then
 			fDamageMulti = 0.3
 		elseif (mat == MAT_WOOD or mat == MAT_PLASTIC or mat == MAT_GLASS) then

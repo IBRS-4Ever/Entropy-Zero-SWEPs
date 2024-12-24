@@ -43,19 +43,8 @@ end
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
-	local bullet = {}
-	bullet.Num = 1
-	bullet.Src = self.Owner:GetShootPos()
-	bullet.Dir = self.Owner:GetAimVector()
-	bullet.Spread = Vector( 0.015, 0.015, 0 )
-	bullet.Force = 5
-	bullet.Damage = GetConVar("ez2_swep_ar2_npc_dmg"):GetInt()
-	bullet.TracerName = self.TracerName
-	bullet.Callback	= function(a,b,c)
-		self:BulletPenetrate(a,b,c)
-	end
-	self.Owner:FireBullets( bullet )
-	
+	self:ShootBullet(Vector( 0.04, 0.04, 0.04 ), GetConVar( "ez2_swep_ar2_npc_dmg" ):GetInt(), 1)
+
 	self:EmitSound("Weapon_EZ2_AR2.Single")
 	self:TakePrimaryAmmo( 1 )
 	
@@ -80,8 +69,8 @@ end
 
 function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 	timer.Create( "NPC_AR2AltFire"..self.Owner:EntIndex(), 0.6, 1, function()
+		if !(IsValid(self) and IsValid(self.Owner)) then return end
 		self:LaunchEnergyBall( 1500, 10, GetConVar("ez2_swep_proto_ar2_ball_explode_time"):GetInt() )
-		timer.Remove( "NPC_AR2AltFire"..self.Owner:EntIndex() )
 	end)
 end
 
@@ -123,7 +112,6 @@ function SWEP:SecondaryAttack()
 				self:LaunchEnergyBall( 1500, 10, GetConVar("ez2_swep_ar2_ball_explode_time"):GetInt() )
 				self:ApplyViewPunch( Angle(-10,0,0) )
 				self:TakeSecondaryAmmo(1)
-				timer.Remove( "AR2AltFire"..self.Owner:EntIndex() )
 			end)
 			self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )

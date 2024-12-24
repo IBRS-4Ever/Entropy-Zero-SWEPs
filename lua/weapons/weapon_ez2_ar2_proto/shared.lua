@@ -38,22 +38,10 @@ end
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if !(IsValid(self.Owner)) then return end
 	if ( !self:NPCCanPrimaryAttack() ) then return end
-	local bullet = {}
-	bullet.Num = GetConVar( "ez2_swep_proto_ar2_num" ):GetInt()
-	bullet.Src = self.Owner:GetShootPos()
-	bullet.Dir = self.Owner:GetAimVector()
-	bullet.Spread = Vector( 0.02, 0.02, 0 )
-	bullet.Force = 5
-	bullet.Damage = GetConVar("ez2_swep_proto_ar2_npc_dmg"):GetInt()
-	bullet.TracerName = self.TracerName
-	bullet.Callback	= function(a,b,c)
-		self:BulletPenetrate(a,b,c)
-	end
-	self.Owner:FireBullets( bullet )
-		
+	self:ShootBullet(Vector( 0.08, 0.08, 0.08 ), GetConVar( "ez2_swep_proto_ar2_npc_dmg" ):GetInt(), GetConVar( "ez2_swep_proto_ar2_num" ):GetInt())
+	
 	self:EmitSound("Weapon_EZ2_AR2_Proto.Single")
 	self:TakePrimaryAmmo( 1 )
-	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 	
 	if self.Owner:GetClass() == "npc_combine_s" && CurTime() > self:GetNextSecondaryFire() then
 		if math.random(1, 10) == 1 then
@@ -73,10 +61,10 @@ end
 
 function SWEP:NPCShoot_Secondary( shootPos, shootDir )
 	timer.Create( "NPC_PrototypeAR2AltFire"..self.Owner:EntIndex(), 0.6, 1, function()
+		if !(IsValid(self) and IsValid(self.Owner)) then return end
 		self:LaunchEnergyBall( 2500, 5, GetConVar("ez2_swep_proto_ar2_ball_explode_time"):GetInt() )
 		self:LaunchEnergyBall( 2500, 5, GetConVar("ez2_swep_proto_ar2_ball_explode_time"):GetInt(), Angle(0, -2.5, 0) )
 		self:LaunchEnergyBall( 2500, 5, GetConVar("ez2_swep_proto_ar2_ball_explode_time"):GetInt(), Angle(0, 2.5, 0) ) 
-		timer.Remove( "NPC_PrototypeAR2AltFire"..self.Owner:EntIndex() )
 	end)
 end
 
@@ -120,7 +108,6 @@ function SWEP:SecondaryAttack()
 				self:LaunchEnergyBall( 2500, 5, GetConVar("ez2_swep_proto_ar2_ball_explode_time"):GetInt(), Angle(0, 2.5, 0) ) 
 				self:ApplyViewPunch( Angle(-10,0,0) )
 				self:TakeSecondaryAmmo(1)
-				timer.Remove( "ProtoTypeAR2AltFire"..self.Owner:EntIndex() )
 			end)
 			self:SetNextPrimaryFire( CurTime() + self.Secondary.Delay )
 			self:SetNextSecondaryFire( CurTime() + self.Secondary.Delay )

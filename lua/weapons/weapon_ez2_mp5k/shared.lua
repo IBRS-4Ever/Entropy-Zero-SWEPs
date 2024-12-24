@@ -42,19 +42,8 @@ end
 
 function SWEP:NPCShoot_Primary( shootPos, shootDir )
 	if ( !self:NPCCanPrimaryAttack() ) then return end
-	local bullet = {}
-	bullet.Num = 1
-	bullet.Src = self.Owner:GetShootPos()
-	bullet.Dir = self.Owner:GetAimVector()
-	bullet.Spread = Vector( 0.03, 0.03, 0 )
-	bullet.Force = 5
-	bullet.Damage = GetConVar("ez2_swep_mp5k_npc_dmg"):GetInt()
-	bullet.AmmoType = self.Primary.Ammo
-	bullet.Callback	= function(a,b,c)
-		self:BulletPenetrate(a,b,c)
-	end
-	self.Owner:FireBullets( bullet )
-		
+	self:ShootBullet(Vector( 0.07, 0.07, 0.07 ), GetConVar( "ez2_swep_mp5k_npc_dmg" ):GetInt(), 1)
+
 	self:EmitSound(self.Primary.Sound)
 	self:TakePrimaryAmmo( 1 )
 	self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
@@ -104,7 +93,7 @@ function SWEP:Think()
 
 		self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
 		self:PlayActivity( self:GetPrimaryAttackActivity() )
-		self:ShootBullet(Vector( 0.01, 0.01, 0.01 ), GetConVar( "ez2_swep_mp5k_plr_dmg" ):GetInt(), 1)
+		self:ShootBullet(Vector( 0.03, 0.03, 0.03 ), GetConVar( "ez2_swep_mp5k_plr_dmg" ):GetInt(), 1)
 		self:ApplyViewKick()
 		self:SetBurstCount(self:GetBurstCount() - 1)
 		self:EmitSound("Weapon_ez2_MP5K.Single")
@@ -123,7 +112,7 @@ function SWEP:ApplyViewKick()
 	if GetConVar( "ez_swep_no_recoil" ):GetBool() then return end
 	local ang = Angle()
 	ang.x = util.SharedRandom("pewx", -.25, -.5)
-	ang.y = util.SharedRandom("pewy", -.6, .6	)
+	ang.y = util.SharedRandom("pewy", -.25, .25	)
 	self:GetOwner():ViewPunch(ang)
 end
 
