@@ -48,8 +48,10 @@ function SWEP:NPCShoot_Primary( shootPos, shootDir )
 			if SERVER then
 				if self.Owner:GetGroundSpeedVelocity()==Vector(0,0,0) then
 					timer.Simple(0.5, function()
-						self.Owner:SetSaveValue( "m_fIsElite", true )
-						self.Owner:SetSaveValue("m_hForcedGrenadeTarget", self.Owner:GetEnemy())
+						if IsValid(self) and IsValid(self.Owner) then
+							self.Owner:SetSaveValue( "m_fIsElite", true )
+							self.Owner:SetSaveValue("m_hForcedGrenadeTarget", self.Owner:GetEnemy())
+						end
 					end)
 				end
 			end

@@ -29,6 +29,9 @@ SWEP.ReloadTime		= -1
 
 SWEP.FirstDrawAnimation = "firstdraw"
 
+SWEP.PenetrationPower = 1
+SWEP.PenetrationPowerMultiplier = 1
+
 SWEP.TracerName = "Tracer"
 SWEP.WepSelectIcon = false
 
@@ -323,30 +326,63 @@ end)
 function SWEP:NPCShoot_Primary() end
 function SWEP:NPCShoot_Secondary() end
 
-function SWEP:BulletPenetrate(attacker, tr, dmginfo)
+local PenetrationMaterials = {
+	[MAT_DEFAULT] = 1,
+	[MAT_VENT] = 0.4, --Since most is aluminum and stuff
+	[MAT_METAL] = 0.6, --Since most is aluminum and stuff
+	[MAT_WOOD] = 0.2,
+	[MAT_PLASTIC] = 0.23,
+	[MAT_FLESH] = 0.48,
+	[MAT_CONCRETE] = 0.87,
+	[MAT_GLASS] = 0.16,
+	[MAT_SAND] = 1,
+	[MAT_SLOSH] = 1,
+	[MAT_DIRT] = 0.95, --This is plaster, not dirt, in most cases.
+	[MAT_FOLIAGE] = 0.9
+}
+
+function SWEP:BulletPenetrate(attacker, trace, dmginfo)
 	if !GetConVar("ez_swep_bullet_penetrate"):GetBool() then return end
 	if IsValid(attacker) then
 		if CLIENT then return end
-		local mat = tr.MatType
-		local dir = tr.Normal * 16
-		local trace = {start=tr.HitPos + dir,endpos=tr.HitPos,mask=MASK_SHOT}
-		local fDamageMulti = 0.5
 		
-		if mat == MAT_SAND then return false end
-		if mat == MAT_GLASS or mat == MAT_PLASTIC or mat == MAT_WOOD or mat == MAT_FLESH or mat == MAT_ALIENFLESH then
-			dir = tr.Normal * 32
+		local penetrated = {}
+		local mult = (PenetrationMaterials[trace.MatType] or 1) * self.PenetrationPowerMultiplier
+		local newdir = (trace.HitPos - trace.StartPos):GetNormalized()
+		local desired_length = math.Clamp(self.PenetrationPower / mult, 0, math.Clamp(self.PenetrationPowerMultiplier * 100, 1000, 8000))
+		local penetrationoffset = newdir * desired_length
+		local pentrace = {
+			start = trace.HitPos,
+			endpos = trace.HitPos + penetrationoffset,
+			mask = MASK_SHOT,
+			filter = penetrated
+		}
+	
+		local isent = IsValid(trace.Entity)
+		local startpos, decalstartpos
+	
+		if isent then
+			table.insert(penetrated, trace.Entity)
+		else
+			pentrace.start:Add(trace.Normal)
+			pentrace.start:Add(trace.Normal)
+			pentrace.collisiongroup = COLLISION_GROUP_WORLD
+			pentrace.filter = NULL
 		end
 		
-		trace = util.TraceLine(trace) 
-		if trace.StartSolid or trace.Fraction >= 1 or tr.Fraction <= 0 then return false end
-		
-		if (mat == MAT_CONCRETE) then
-			fDamageMulti = 0.3
-		elseif (mat == MAT_WOOD or mat == MAT_PLASTIC or mat == MAT_GLASS) then
-			fDamageMulti = 0.8
-		end
-		local bullet = {Num=1, Src=trace.HitPos, Dir=tr.Normal, Spread=vector_origin, Tracer=1, TracerName=self.TracerName, Force=5, Damage=(dmginfo:GetDamage()*fDamageMulti), HullSize=2, IgnoreEntity = tr.Entity}
-		
+		local bullet = {
+			Num = 1, 
+			Src = pentrace.endpos, 
+			Dir = trace.Normal, 
+			Spread = vector_origin, 
+			Tracer = 1, 
+			TracerName = self.TracerName, 
+			Force = 5, 
+			Damage = (dmginfo:GetDamage()*mult), 
+			HullSize = 2, 
+			IgnoreEntity = trace.Entity
+		}
+
 		timer.Simple(0, function()
 		if not IsFirstTimePredicted() then return end
 			attacker.FireBullets(attacker, bullet, true)

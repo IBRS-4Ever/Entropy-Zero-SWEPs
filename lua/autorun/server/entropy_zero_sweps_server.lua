@@ -6,7 +6,7 @@ local ReplacementClass = {
 	["npc_metropolice"] = true
 }
 
-hook.Add("OnEntityCreated", "ReplaceNPCWeapons", function(entity)
+hook.Add("OnEntityCreated", "EntropyZeroSWEP_WeaponReplacement_NPC", function(entity)
 	if CLIENT then return end
     -- 检查生成的实体是否为NPC
     if entity:IsNPC() and ReplacementClass[entity:GetClass()] and GetConVar("ez_swep_replacement"):GetBool() then
@@ -32,6 +32,28 @@ hook.Add("OnEntityCreated", "ReplaceNPCWeapons", function(entity)
 			end
 		end)
     end
+end)
+
+local PlayerWeaponReplacements = {
+	["weapon_pistol"] = "weapon_ez2_pistol",
+	["weapon_357"] = "weapon_ez2_357",
+	["weapon_smg1"] = "weapon_ez2_smg1",
+	["weapon_ar2"] = "weapon_ez2_ar2",
+	["weapon_shotgun"] = "weapon_ez2_shotgun",
+}
+
+hook.Add( "PlayerSpawn", "EntropyZeroSWEP_WeaponReplacement_Player", function(player)
+	if !GetConVar("ez_swep_replacement_player"):GetBool() then return end
+	timer.Simple( 0, function() 
+		local weapons = player:GetWeapons()
+		for i = 1, table.Count(weapons) do
+			local WeaponClass = weapons[i]:GetClass()
+			if PlayerWeaponReplacements[WeaponClass] then
+				player:StripWeapon(WeaponClass)
+				player:Give(PlayerWeaponReplacements[WeaponClass])
+			end
+		end
+	end)
 end)
 
 function SendAnim(ply, animation, c)
