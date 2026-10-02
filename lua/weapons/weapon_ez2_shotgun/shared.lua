@@ -2,7 +2,8 @@ AddCSLuaFile()
 DEFINE_BASECLASS("weapon_ez2_base")
 
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Category				= "#EZ_Sweps.Category_EZ"
+SWEP.SubCategory				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= true
 SWEP.PrintName				= "#ez2_swep.shotgun"
 SWEP.Slot				= 3

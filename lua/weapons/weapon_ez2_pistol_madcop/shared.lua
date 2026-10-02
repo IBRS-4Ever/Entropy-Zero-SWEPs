@@ -1,5 +1,6 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Category				= "#EZ_Sweps.Category_EZ"
+SWEP.SubCategory				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= true
 SWEP.PrintName				= "#ez2_swep.pistol_madcop"
 SWEP.Slot				= 1
@@ -15,7 +16,7 @@ end
 SWEP.Primary.Automatic			= false
 SWEP.Primary.ClipSize = 18
 SWEP.Primary.Delay = 0.1
-SWEP.Primary.DefaultClip = 24
+SWEP.Primary.DefaultClip = 54
 SWEP.Primary.Ammo = "pistol"
 
 SWEP.HoldType = "pistol"

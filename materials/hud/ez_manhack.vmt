@@ -1,0 +1,5 @@
+SDK_UnlitGeneric
+{
+	"$basetexture" "hud/ez_manhack"
+	"$translucent" 1
+}

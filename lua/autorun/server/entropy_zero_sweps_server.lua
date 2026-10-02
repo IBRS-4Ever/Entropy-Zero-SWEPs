@@ -31,7 +31,7 @@ hook.Add("OnEntityCreated", "EntropyZeroSWEP_WeaponReplacement_NPC", function(en
 				entity:SelectWeapon(selectedweapon)
 			end
 		end)
-    end
+	end
 end)
 
 local PlayerWeaponReplacements = {

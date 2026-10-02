@@ -46,7 +46,7 @@ end
 function SWEP:SetupDataTables()
 	self:NetworkVar( "Float",	"NextIdleTime" )
 	self:NetworkVar( "Float",	"FireDuration" ) -- time spent holding primary trigger
-	self:NetworkVar( "Int",		"ShotsFired" ) -- consecutive shot counter
+	self:NetworkVar( "Int", "ShotsFired" ) -- consecutive shot counter
 	self:NetworkVar( "Bool",	"IsReloading")
 	self:NetworkVar( "Float",	"ReloadTime" )
 	self:NetworkVar( "Bool",	"FirstTimePickup")
@@ -110,6 +110,7 @@ function SWEP:Reload()
 			self:BeginReload()
 		else
 			if !GetConVar("ez_swep_firstdraw_by_reload"):GetBool() then return end
+			if !self.FirstDrawAnimation then return end
 			if not self:GetIsReloading() and self:GetActivity() == ACT_VM_IDLE then
 				if timer.TimeLeft( "EZ2SWEP_FirstDrawTimer" ) == nil then
 					self:PlayActivity(self.FirstDrawAnimation)
@@ -216,6 +217,9 @@ function SWEP:ShootBullet(spread, damage, count)
 	end
 end
 
+function SWEP:CustomThink()
+end
+
 function SWEP:Think()
 	if game.SinglePlayer() and CLIENT then self.ViewModelFOV = GetConVar("ez_swep_fov"):GetInt() return end
 	if self.Owner:IsNPC() then return end
@@ -237,7 +241,8 @@ function SWEP:Think()
 	if self:GetIsReloading() and self:GetReloadTime() <= CurTime() then
 		self:FinishReload()
 	end
-
+	
+	self:CustomThink()
 	self:Idle()
 end
 
@@ -313,18 +318,18 @@ function SWEP:DoMachineGunKick(maxVerticalKickAngle, fireDurationTime, slideLimi
 	owner:ViewPunch(vecScratch * 0.5)
 end
 
+function SWEP:NPCShoot_Primary() end
+function SWEP:NPCShoot_Secondary() end
+
 hook.Add( "EntityEmitSound", "EZ_SWEPS_DO_ALTIFRE",function(data)--we use sound manipulation to make people think soldiers can actually use smg grenades
 	local ar2_ball = { [Sound("Weapon_CombineGuard.Special1")] = true }
 	local AltFire = ar2_ball[data.OriginalSoundName]
 	local Entity = data.Entity
 	if AltFire and Entity:GetClass() == "npc_combine_s" then
-		Entity:GetActiveWeapon():NPCShoot_Secondary()
+		if weapons.IsBasedOn(Entity:GetActiveWeapon():GetClass(),"weapon_ez2_base") then Entity:GetActiveWeapon():NPCShoot_Secondary() end
 		return false
 	end
 end)
-
-function SWEP:NPCShoot_Primary() end
-function SWEP:NPCShoot_Secondary() end
 
 local PenetrationMaterials = {
 	[MAT_DEFAULT] = 1,
@@ -378,7 +383,7 @@ function SWEP:BulletPenetrate(attacker, trace, dmginfo)
 			Tracer = 1, 
 			TracerName = self.TracerName, 
 			Force = 5, 
-			Damage = (dmginfo:GetDamage()*mult), 
+			Damage = (dmginfo:GetDamage()*(1-mult)), 
 			HullSize = 2, 
 			IgnoreEntity = trace.Entity
 		}
@@ -439,7 +444,7 @@ function SWEP:Deploy()
 		self:SetShotsFired(0)
 	end
 
-	if self:GetFirstTimePickup() and SERVER and GetConVar("ez_swep_firstdraw_animation"):GetBool() then
+	if self.FirstDrawAnimation and self:GetFirstTimePickup() and SERVER and GetConVar("ez_swep_firstdraw_animation"):GetBool() then
 		self:PlayActivity(self.FirstDrawAnimation)
 		self:SetFirstTimePickup(false)
 	end

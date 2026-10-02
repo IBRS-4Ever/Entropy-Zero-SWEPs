@@ -2,13 +2,14 @@ AddCSLuaFile()
 DEFINE_BASECLASS("weapon_ez2_base")
 
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Category				= "#EZ_Sweps.Category_EZ"
+SWEP.SubCategory				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= true
 SWEP.PrintName				= "#ez2_swep.mp5k"
 SWEP.Slot				= 2
 SWEP.SlotPos				= 20
 SWEP.ViewModel        = "models/weapons/ez2/c_mp5k.mdl"
-SWEP.WorldModel = "models/weapons/w_mp5k.mdl"
+SWEP.WorldModel = "models/weapons/ez2/w_mp5k.mdl"
 SWEP.FiresUnderwater = false
 
 if CLIENT then
@@ -16,7 +17,7 @@ if CLIENT then
 end
 
 SWEP.Primary.ClipSize = 30
-SWEP.Primary.Delay = 0.1
+SWEP.Primary.Delay = 0.05
 SWEP.Primary.DefaultClip = 200
 SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.Sound = Sound ( "Weapon_ez2_MP5K.Single" )
@@ -58,7 +59,7 @@ function SWEP:PrimaryAttack()
 
 	self:SetBurstCount(3)
 	self:Think()
-	self:SetNextPrimaryFire(CurTime() + 0.1)
+	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 end
 
 function SWEP:SecondaryAttack() 
@@ -79,7 +80,7 @@ function SWEP:SecondaryAttack()
 	self:ShootBullet(Vector( 0.05, 0.05, 0.05 ), GetConVar( "ez2_swep_mp5k_plr_dmg" ):GetInt(), 1)
 
 	self:SetShotsFired( self:GetShotsFired() + 1 )
-	self:SetNextPrimaryFire(CurTime() + 0.25)
+	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
 	self:SetLastShootTime()
 end
@@ -98,8 +99,8 @@ function SWEP:Think()
 		self:SetBurstCount(self:GetBurstCount() - 1)
 		self:EmitSound("Weapon_ez2_MP5K.Single")
 
-		self:SetNextSecondaryFire(CurTime() + 0.1 )
-		self:SetNextPrimaryFire(CurTime() + 0.1 )
+		self:SetNextSecondaryFire(CurTime() + self.Primary.Delay )
+		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay )
 
 		if self:GetBurstCount() == 0 then
 			self:SetNextPrimaryFire(CurTime() + 0.25)

@@ -1,11 +1,12 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Category				= "#EZ_Sweps.Category_EZ"
+SWEP.SubCategory				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= true
 SWEP.PrintName				= "#ez2_swep.smg1"
 SWEP.Slot				= 2
 SWEP.SlotPos				= 20
-SWEP.UseHands = false 
-SWEP.ViewModel        = "models/weapons/ez2/v_smg1.mdl"
+SWEP.UseHands = true 
+SWEP.ViewModel        = "models/weapons/ez2/c_smg1.mdl"
 SWEP.WorldModel = "models/weapons/w_smg1.mdl"
 SWEP.FiresUnderwater = false
 

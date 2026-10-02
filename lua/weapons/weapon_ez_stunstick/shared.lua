@@ -1,5 +1,6 @@
 SWEP.Base           = "weapon_base"
 SWEP.Category				= "#EZ_Sweps.Category_EZ"
+SWEP.SubCategory				= "#EZ_Sweps.Category_EZ"
 SWEP.Spawnable				= true
 SWEP.AdminSpawnable			= true
 SWEP.AdminOnly = false

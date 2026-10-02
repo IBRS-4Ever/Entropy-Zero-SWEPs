@@ -1,5 +1,6 @@
 SWEP.Base           = "weapon_ez2_base"
-SWEP.Category				= "#EZ_Sweps.Category_EZ2"
+SWEP.Category				= "#EZ_Sweps.Category_EZ"
+SWEP.SubCategory				= "#EZ_Sweps.Category_EZ2"
 SWEP.Spawnable				= false 
 SWEP.PrintName				= "#ez2_swep.grenade"
 SWEP.Slot				= 1
@@ -19,12 +20,28 @@ SWEP.HoldType = "grenade"
 SWEP.ReloadSound = "Weapon_EZ2_Pistol_Madcop.Reload"
 SWEP.NPCReloadSound = "Weapon_EZ2_Pistol_Madcop.Reload"
 
+SWEP.FirstDrawAnimation = false
+
 SWEP.CrosshairX		= 0.25
 SWEP.CrosshairY		= 0.75
 
 SWEP.SelectIcon = "m"
 
 SWEP.Ready = 0
+
+function SWEP:SetupDataTables()
+	self:NetworkVar( "Float",	"NextIdleTime" )
+	self:NetworkVar( "Float",	"FireDuration" ) -- time spent holding primary trigger
+	self:NetworkVar( "Int", "ShotsFired" ) -- consecutive shot counter
+	self:NetworkVar( "Bool",	"IsReloading")
+	self:NetworkVar( "Float",	"ReloadTime" )
+	self:NetworkVar( "Bool",	"FirstTimePickup")
+
+	if SERVER then
+		self:SetShotsFired(0)
+		self:SetIsReloading(false)
+	end
+end
 
 function SWEP:PrimaryAttack()
 	self:SendWeaponAnim( ACT_VM_PULLBACK_HIGH )
